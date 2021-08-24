@@ -1,0 +1,29 @@
+<?php
+define ("debug", false);
+
+define ("db_host", "localhost");
+define ("db_database", "YOUR-DATABASE-NAME");
+define ("db_username", "YOUR-MYSQL-USERNAME");
+define ("db_password", "YOUR-PASSWORD");
+
+define ("zammad_debug", false);
+define ("zammad_url", "https://your-zammad-domain");
+define ("zammad_username", "username");
+define ("zammad_password", "password");
+
+define ("log_retention", 180); // days to keep logs
+
+DEFINE("reset_url", "https://www.some-domain/password"); // where you want to redirect users to reset their LDAP password
+DEFINE("support_email", "help@some-domain.com");
+
+# LDAP OPTIONS
+define("LDAP_ENABLE", true);
+define("LDAP_SERVER", "server");
+define("LDAP_PORT", 389);
+define("LDAP_STARTTLS", false);
+define("LDAP_BIND_DN", "CN=someaccount,DC=some,DC=domain");
+define("LDAP_BASE_DN", "DC=some,DC=domain");
+define("LDAP_BIND_PASSWORD", "password");
+define("LDAP_ALLOWED_DN", 'OU=Users,DC=some,DC=domain');
+define("LDAP_ACCOUNT_SUFFIX", '@some.domain');
+?>

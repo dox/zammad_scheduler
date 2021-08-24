@@ -1,0 +1,6 @@
+{
+    "require": {
+        "directorytree/ldaprecord": "^1.9",
+        "zammad/zammad-api-client-php": "2.0.*"
+    }
+}

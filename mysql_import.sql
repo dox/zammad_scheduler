@@ -1,0 +1,14 @@
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+SET time_zone = "+00:00";
+CREATE TABLE `jobs` (`uid` int(11) NOT NULL,`subject` text NOT NULL,`body` text NOT NULL,`type` varchar(100) NOT NULL,`priority` varchar(100) NOT NULL,`tags` varchar(200) DEFAULT NULL,`frequency` varchar(100) NOT NULL,`frequency2` varchar(100) DEFAULT NULL,`assign_to` bigint(14) NOT NULL,`logged_by` bigint(14) NOT NULL,`cc` varchar(255) DEFAULT NULL,`status` varchar(45) NOT NULL DEFAULT 'Enabled') ENGINE=InnoDB DEFAULT CHARSET=latin1;
+CREATE TABLE `logs` (`uid` int(11) NOT NULL,`date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,`description` text,`type` varchar(40) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+CREATE TABLE `team` (`uid` int(11) NOT NULL,`firstname` varchar(45) NOT NULL,`lastname` varchar(45) NOT NULL,`email` varchar(240) NOT NULL,`zendesk_id` bigint(14) NOT NULL,`enabled` tinyint(1) NOT NULL DEFAULT '0') ENGINE=InnoDB DEFAULT CHARSET=latin1;
+ALTER TABLE `jobs` ADD PRIMARY KEY (`uid`);
+ALTER TABLE `logs` ADD PRIMARY KEY (`uid`);
+ALTER TABLE `team` ADD PRIMARY KEY (`uid`);
+ALTER TABLE `jobs` MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `logs` MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `team` MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT;
+COMMIT;
