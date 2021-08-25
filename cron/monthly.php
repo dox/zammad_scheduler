@@ -1,27 +1,22 @@
 <?php
-session_start();
+require_once('../inc/autoload.php');
 
-require_once('./inc/config.php');
+$tickets = new tickets();
 
-require_once('./vendor/autoload.php');
-
-require_once('./inc/database.php');
-require_once('./inc/jobs.php');
-require_once('./inc/agents.php');
-require_once('./inc/logs.php');
-
-$jobs = new jobs();
-$jobs_monthly = $jobs->jobs_monthly();
-
-foreach($jobs_monthly AS $job) {
-	if ($job->status == "Enabled") {
-		$job->create_zendesk_ticket();
-	}
-	else {
-		$logRecord = new logs();
-		$logRecord->description = "Didn't create job: " . $job->subject . " (" . $job->uid . ") because it was disabled.";
-		$logRecord->type = "info";
-		$logRecord->log_record();
-	}
+foreach($tickets->getTickets('Monthly') AS $ticket) {
+	$ticket_data = [
+		'group_id'    => $ticket['zammad_group'],
+		'owner_id'    => $ticket['zammad_agent'],
+		'priority_id' => $ticket['zammad_priority'],
+		'state_id'    => 1,
+		'title'       => $ticket['subject'],
+		'customer_id' => $ticket['zammad_customer'],
+		'article'     => [
+			'subject' => $ticket['subject'],
+			'body'    => $ticket['body'],
+		],
+	];
+	
+	$tickets->ticketCreateInZammad($ticket_data);
 }
 ?>

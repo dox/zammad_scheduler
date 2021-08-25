@@ -15,7 +15,7 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$logRecord = new logs();
 		$logRecord->description = $_SESSION['username'] . " logon succesful";
 		$logRecord->type = "logon_success";
-		//$logRecord->log_record();
+		$logRecord->log_record();
 	} else {
 		// Username or password is incorrect.
 		$_SESSION['logon'] = false;
@@ -26,7 +26,7 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$logRecord = new logs();
 		$logRecord->description = $_POST['inputUsername'] . " logon failed";
 		$logRecord->type = "logon_fail";
-		//$logRecord->log_record();
+		$logRecord->log_record();
 	}
 }
 

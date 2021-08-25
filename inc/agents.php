@@ -74,5 +74,18 @@ class agents {
 	
 		return $output;
 	}
+	
+	public function ticketsInvolvedWith($agentID = null) {
+		global $database;
+	
+		$sql  = "SELECT * FROM tickets ";
+		$sql .= "WHERE zammad_customer = '" . $agentID . "' ";
+		$sql .= "OR zammad_agent = '" . $agentID . "'";
+	
+		$tickets = $database->query($sql)->fetchAll();
+		
+		return $tickets;
+		
+	}
 }
 ?>

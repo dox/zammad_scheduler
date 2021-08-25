@@ -1,34 +1,30 @@
 <?php
-session_start();
+require_once('../inc/autoload.php');
 
-require_once('./inc/config.php');
+$tickets = new tickets();
 
-require_once('./vendor/autoload.php');
-
-require_once('./inc/database.php');
-require_once('./inc/jobs.php');
-require_once('./inc/agents.php');
-require_once('./inc/logs.php');
-
-$jobs = new jobs();
-$jobs_yearly = $jobs->jobs_yearly();
-
-foreach($jobs_yearly AS $job) {
-	$freqArray = explode(",", strtoupper($job->frequency2));
-
+foreach($tickets->getTickets('Daily') AS $ticket) {
+	// fetch the days this ticket is supposed to run
+	$freqArray = explode(",", strtoupper($ticket['frequency2']));
+	
+	// check each of the scheduled days, and check if today is one of them
 	foreach ($freqArray AS $dateToRun) {
 		if ($dateToRun == strtoupper(date('M-d'))) {
-			if ($job->status == "Enabled") {
-				$job->create_zendesk_ticket();
-			}
-			else {
-				$logRecord = new logs();
-				$logRecord->description = "Didn't create job: " . $job->subject . " (" . $job->uid . ") because it was disabled.";
-				$logRecord->type = "info";
-				$logRecord->log_record();
-			}
+			$ticket_data = [
+				'group_id'    => $ticket['zammad_group'],
+				'owner_id'    => $ticket['zammad_agent'],
+				'priority_id' => $ticket['zammad_priority'],
+				'state_id'    => 1,
+				'title'       => $ticket['subject'],
+				'customer_id' => $ticket['zammad_customer'],
+				'article'     => [
+					'subject' => $ticket['subject'],
+					'body'    => $ticket['body'],
+				],
+			];
+			
+			$tickets->ticketCreateInZammad($ticket_data);
 		}
 	}
-
 }
 ?>

@@ -1,7 +1,6 @@
 <?php
-$logs = new logs();
-$logs->delete_old_logs();
-$logsAll = $logs->find_all();
+$logsClass = new logs();
+$logsClass->purgeLogs();
 ?>
 
 <div class="container">
@@ -41,9 +40,7 @@ $logsAll = $logs->find_all();
 		</thead>
 		<tbody>
 			<?php
-			foreach ($logsAll AS $log) {
-				echo $log->display_log();
-			}
+			echo $logsClass->displayLogs();
 			?>
 		</tbody>
 	</table>

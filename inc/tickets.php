@@ -6,7 +6,6 @@ use ZammadAPIClient\ResourceType;
 class tickets {
 	protected static $table_name = "tickets";
 	
-	
 	public static function getTicket($uid = null) {
 		global $database;
 	
@@ -20,7 +19,7 @@ class tickets {
 	
 	public function ticketDisplay($uid = null) {		
 		$ticket = $this->getTicket($uid);
-				
+		
 		$agentsClass = new agents();
 		$agent = $agentsClass->getAgent($ticket['zammad_agent']);
 	
@@ -63,8 +62,7 @@ class tickets {
 	
 	public function ticketCreateInZammad($ticket = null) {
 		global $client;
-		// = new Client($zammad_api_client_config);
-		printArray($ticket);
+		
 		$ticket_data = [
 			'group_id'    => $ticket['group_id'],
 			'owner_id'    => $ticket['owner_id'],
@@ -85,148 +83,96 @@ class tickets {
 			
 		$ticket_id = $ticket->getID(); // same as getValue('id')
 		
+		$logRecord = new logs();
+		$logRecord->description = "API submission: " . $ticket_data['title'];
+		$logRecord->type = "cron";
+		$logRecord->log_record();
+		
 		return true;
 	}
-
-
-
-
-
-
-
-public static function jobs_assigned($zendesk_id = null) {
-	global $database;
-
-	$sql  = "SELECT * FROM " . self::$table_name . " ";
-	$sql .= "WHERE assign_to = '" . $zendesk_id . "';";
-
-	$results = self::find_by_sql($sql);
-
-	return $results;
-	//return !empty($results) ? array_shift($results) : false;
-}
-
-public static function jobs_logged($zendesk_id = null) {
-	global $database;
-
-	$sql  = "SELECT * FROM " . self::$table_name . " ";
-	$sql .= "WHERE logged_by = '" . $zendesk_id . "';";
-
-	$results = self::find_by_sql($sql);
-
-	return $results;
-	//return !empty($results) ? array_shift($results) : false;
-}
-
-public static function jobs_involved_with($zendesk_id = null) {
-	global $database;
-
-	$sql  = "SELECT * FROM " . self::$table_name . " ";
-	$sql .= "WHERE assign_to = '" . $zendesk_id . "' ";
-	$sql .= "OR logged_by = '" . $zendesk_id . "';";
-
-	$results = self::find_by_sql($sql);
-
-	return $results;
-}
-
-
-
-public function job_create() {
-	global $database;
-
-	$sql  = "INSERT INTO " . self::$table_name . " (";
-	$sql .= "subject, body, type, priority, tags, frequency, frequency2, assign_to, cc, status, logged_by";
-	$sql .= ") VALUES ('";
-	$sql .= $database->escape_value($this->subject) . "', '";
-	$sql .= $database->escape_value($this->body) . "', '";
-	$sql .= $database->escape_value($this->type) . "', '";
-	$sql .= $database->escape_value($this->priority) . "', '";
-	$sql .= $database->escape_value($this->tags) . "', '";
-	$sql .= $database->escape_value($this->frequency) . "', '";
-	$sql .= $database->escape_value($this->frequency2) . "', '";
-	$sql .= $database->escape_value($this->assign_to) . "', '";
-	$sql .= $database->escape_value($this->cc) . "', '";
-	$sql .= $database->escape_value($this->status) . "', '";
-	$sql .= $database->escape_value($this->logged_by) . "')";
-
-	// check if the database entry was successful (by attempting it)
-	if ($database->query($sql)) {
+	
+	public function update($array = null) {
+		global $database;
+	
+		$sql  = "UPDATE " . self::$table_name;
+	
+		foreach ($array AS $updateItem => $value) {
+			if ($updateItem != 'uid') {
+				if ($value == '') {
+					$sqlUpdate[] = $updateItem ." = NULL ";
+				} else {
+					$value = str_replace("'", "\'", $value);
+					$sqlUpdate[] = $updateItem ." = '" . $value . "' ";
+				}
+			}
+		}
+		
+		$sql .= " SET " . implode(", ", $sqlUpdate);
+		$sql .= " WHERE uid = '" . $array['uid'] . "' ";
+		$sql .= " LIMIT 1";
+		
+		// check if the database entry was successful (by attempting it)
+		if ($database->query($sql)) {
+			$logRecord = new logs();
+			$logRecord->description = "New " . $this->frequency . " task created: '" . $this->subject . "'";
+			$logRecord->type = "admin";
+			$logRecord->log_record();
+		} else {
+			$logRecord = new logs();
+			$logRecord->description = "Error creating task: " . $this->subject . "'";
+			$logRecord->type = "error";
+			$logRecord->log_record();
+		}
+		
+		return $update;
+	  }
+	  
+	  public function delete($ticketUID = null) {
+		global $database;
+		
+		$sql  = "DELETE FROM " . self::$table_name . " ";
+		$sql .= "WHERE uid = '" . $ticketUID . "' ";
+		$sql .= "LIMIT 1";
+  
+		$delete = $database->query($sql);
+  
+		// log this!
 		$logRecord = new logs();
-		$logRecord->description = "New " . $this->frequency . " task created: '" . $this->subject . "'";
-		$logRecord->type = "admin";
-		$logRecord->log_record();
-
-		return true;
-	} else {
-		$logRecord = new logs();
-		$logRecord->description = "Error creating task: " . $this->subject . "'";
+		$logRecord->description = "Task deleted: UID " . $ticketUID;
 		$logRecord->type = "error";
 		$logRecord->log_record();
-
-		return false;
 	}
-}
-
-public function job_delete() {
-	global $database;
-
-	$sql  = "DELETE FROM " . self::$table_name . " ";
-	$sql .= "WHERE uid = '" . $this->uid . "' ";
-	$sql .= "LIMIT 1;";
-
-	// check if the database entry was successful (by attempting it)
-	if ($database->query($sql)) {
+	
+	public function create($array = null) {
+		global $database;
+		
+		foreach ($array AS $updateItem => $value) {
+			$value = str_replace("'", "\'", $value);
+			$sqlUpdate[] = $updateItem ." = '" . $value . "' ";
+		}
+		
+		$sql  = "INSERT INTO " . self::$table_name;
+		$sql .= " SET " . implode(", ", $sqlUpdate);
+		
+		$create = $database->query($sql);
+		
+		// log this!
 		$logRecord = new logs();
-		$logRecord->description = "Deleting task (" . $this->uid . ")";
+		$logRecord->description = "Task created: " . $array['subject'];
 		$logRecord->type = "admin";
-		$logRecord->log_record();
-
-		return true;
-	} else {
-		$logRecord = new logs();
-		$logRecord->description = "Error deleting task (" . $this->uid . ")";
-		$logRecord->type = "error";
-		$logRecord->log_record();
-
-		return false;
+		$logRecord->log_record();		
+		
+		return $create;
 	}
-}
 
-public function job_update() {
-	global $database;
 
-	$sql  = "UPDATE " . self::$table_name . " ";
-	$sql .= "SET subject = '" . $database->escape_value($this->subject) . "', ";
-	$sql .= "body = '" . $database->escape_value($this->body) . "', ";
-	$sql .= "type = '" . $database->escape_value($this->type) . "', ";
-	$sql .= "priority = '" . $database->escape_value($this->priority) . "', ";
-	$sql .= "tags = '" . $database->escape_value($this->tags) . "', ";
-	$sql .= "frequency = '" . $database->escape_value($this->frequency) . "', ";
-	$sql .= "frequency2 = '" . $database->escape_value($this->frequency2) . "', ";
-	$sql .= "logged_by = '" . $database->escape_value($this->logged_by) . "', ";
-	$sql .= "cc = '" . $database->escape_value($this->cc) . "', ";
-	$sql .= "assign_to = '" . $database->escape_value($this->assign_to) . "', ";
-	$sql .= "status = '" . $database->escape_value($this->status) . "' ";
-	$sql .= "WHERE uid = '" . $this->uid . "' ";
-	$sql .= "LIMIT 1;";
 
-	if ($database->query($sql)) {
-		$logRecord = new logs();
-		$logRecord->description = "Updating task (" . $this->uid . ")";
-		$logRecord->type = "admin";
-		$logRecord->log_record();
 
-		return true;
-	} else {
-		$logRecord = new logs();
-		$logRecord->description = "Error updating task (" . $this->uid . ")";
-		$logRecord->type = "error";
-		$logRecord->log_record();
 
-		return false;
-	}
-}
+
+
+
+
 
 public function tagsArray() {
 	$tags = $this->tags;
@@ -234,54 +180,6 @@ public function tagsArray() {
 	$tagsArray = explode(",", $this->tags);
 
 	return $tagsArray;
-}
-
-public function create_zendesk_ticket() {
-	$subdomain = zd_subdomain;
-	$username  = zd_username;
-	$token     = zd_token;
-
-	$client = new ZendeskAPI($subdomain);
-	$client->setAuth('basic', ['username' => $username, 'token' => $token]);
-
-	if ($this->assign_to == 0) {
-		$this->assign_to = null;
-	}
-
-	try {
-		// Create a new ticket wi
-		$newTicket = $client->tickets()->create(array(
-			'type' => strtolower($this->type),
-			'tags'  => array( implode(",", $this->tagsArray()) ),
-			'subject'  => $this->subject,
-			'comment'  => array(
-				'body' => $this->body
-			),
-			'priority' => strtolower($this->priority),
-			'assignee_id' => $this->assign_to,
-			'requester_id' => $this->logged_by,
-			'collaborators' => $this->cc,
-		));
-
-		$logRecord = new logs();
-		$logRecord->description = "Successfully ran " . strtolower($this->frequency) . " task  '" . $this->subject . "' (" . $this->uid . ")";
-		$logRecord->type = "cron";
-		$logRecord->log_record();
-
-		// Show result
-		//echo "running complete";
-		//echo "<pre>";
-		//print_r($newTicket);
-		//echo "</pre>";
-		return true;
-	} catch (\Zendesk\API\Exceptions\ApiResponseException $e) {
-		$logRecord = new logs();
-		$logRecord->description = "Error running " . $this->frequency . "task  '" . $this->subject . "' (" . $this->uid . ") " . $e->getMessage();
-		$logRecord->type = "error";
-		$logRecord->log_record();
-
-		return $e->getMessage().'</br>';
-	}
 }
 
 }

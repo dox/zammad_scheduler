@@ -2,6 +2,25 @@
 $tickets = new tickets();
 $agentsClass = new agents();
 
+if (isset($_GET['ticketDelete'])) {
+	$tickets->delete($_GET['ticketDelete']);
+}
+
+if (isset($_POST['inputSubject'])) {
+	$ticket_create['subject'] = $_POST['inputSubject'];
+	$ticket_create['body'] = $_POST['inputBody'];
+	$ticket_create['zammad_priority'] = $_POST['inputPriority'];
+	$ticket_create['zammad_group'] = $_POST['inputGroup'];
+	$ticket_create['tags'] = $_POST['inputTags'];
+	$ticket_create['frequency'] = $_POST['inputFrequency'];
+	$ticket_create['frequency2'] = str_replace(' ', '', strtoupper($_POST['inputFrequency2']));
+	$ticket_create['zammad_agent'] = $_POST['inputAssignTo'];
+	$ticket_create['zammad_customer'] = $_POST['inputLoggedBy'];
+	$ticket_create['cc'] = $_POST['inputCC'];
+	$ticket_create['status'] = "Enabled";
+	
+	$tickets->create($ticket_create);
+}
 ?>
 
 <div class="container">
@@ -67,20 +86,20 @@ $agentsClass = new agents();
 					<textarea class="form-control" rows="3" id="inputBody" name="inputBody"></textarea>
 				</div>
 				<div class="mb-3">
-					<label for="inputType" class="form-label">Ticket Type</label>
-					<select class="form-select" id="inputType" name="inputType">
-						<option value="Question">Question</option>
-						<option value="Problem">Problem</option>
-						<option value="Task">Task</option>
+					<label for="inputGroup" class="form-label">Ticket Group</label>
+					<select class="form-select" id="inputGroup" name="inputGroup">
+						<option value="3">Maintenance</option>
+						<option value="2">IT Support</option>
+						<option value="5">Gardens</option>
+						<option value="4">Housekeeping</option>
 					</select>
 				</div>
 				<div class="mb-3">
 					<label for="inputPriority" class="form-label">Ticket Priority</label>
 					<select class="form-select" id="inputPriority" name="inputPriority">
-						<option value="Low">Low</option>
-						<option value="Normal">Normal</option>
-						<option value="High">High</option>
-						<option value="Urgent">Urgent</option>
+						<option value="1">1 Low</option>
+						<option value="2">2 Normal</option>
+						<option value="3">3 High</option>
 					</select>
 				</div>
 				<div class="mb-3">

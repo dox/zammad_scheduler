@@ -5,23 +5,26 @@ $ticket = $tickets->getTicket($_GET['job']);
 $agentsClass = new agents();
 
 if (!empty($_POST)) {
-	$job->subject = $_POST['inputSubject'];
-	$job->body = $_POST['inputBody'];
-	$job->type = $_POST['inputType'];
-	$job->priority = $_POST['inputPriority'];
-	$job->tags = $_POST['inputTags'];
-	$job->frequency = $_POST['inputFrequency'];
-	$job->frequency2 = str_replace(' ', '', strtoupper($_POST['inputFrequency2']));
-	$job->assign_to = $_POST['inputAssignTo'];
-	$job->logged_by = $_POST['inputLoggedBy'];
-	$job->cc = $_POST['inputCC'];
-	$job->status = $_POST['inputStatus'];
-
-	if ($job->job_update()) {
+	$ticket_update['uid'] = $ticket['uid'];
+	$ticket_update['subject'] = $_POST['inputSubject'];
+	$ticket_update['body'] = $_POST['inputBody'];
+	$ticket_update['zammad_priority'] = $_POST['inputPriority'];
+	$ticket_update['zammad_group'] = $_POST['inputGroup'];
+	$ticket_update['tags'] = $_POST['inputTags'];
+	$ticket_update['frequency'] = $_POST['inputFrequency'];
+	$ticket_update['frequency2'] = str_replace(' ', '', strtoupper($_POST['inputFrequency2']));
+	$ticket_update['zammad_agent'] = $_POST['inputAssignTo'];
+	$ticket_update['zammad_customer'] = $_POST['inputLoggedBy'];
+	$ticket_update['cc'] = $_POST['inputCC'];
+	$ticket_update['status'] = $_POST['inputStatus'];
+	
+	if ($tickets->update($ticket_update)) {
 		$messages[] = "<div class=\"alert alert-success\" role=\"alert\">Job Updated!</div>";
 	} else {
 		$messages[] = "<div class=\"alert alert-danger\" role=\"alert\">Something went wrong, please contact IT Support</div>";
 	}
+	
+	$ticket = $tickets->getTicket($_GET['job']);
 }
 ?>
 
@@ -45,14 +48,6 @@ if (!empty($_POST)) {
 		<textarea class="form-control" rows="3" id="inputBody" name="inputBody"><?php echo $ticket['body']; ?></textarea>
 	</div>
 	<div class="row g-12">
-		<div class="col-md-4 mb-3">
-			<label for="inputType" class="form-label">Ticket Type</label>
-			<select class="form-select" id="inputType" name="inputType">
-				<option value="Question" <?php if ($ticket['type'] == "Question") { echo " selected";}?>>Question</option>
-				<option value="Problem" <?php if ($ticket['type'] == "Problem") { echo " selected";}?>>Problem</option>
-				<option value="Task"<?php if ($ticket['type'] == "Task") { echo " selected";}?> >Task</option>
-			</select>
-		</div>
 		<div class="col-md-4 mb-3">
 			<label for="inputGroup" class="form-label">Ticket Group</label>
 			<select class="form-select" id="inputGroup" name="inputGroup">
@@ -146,7 +141,7 @@ if (!empty($_POST)) {
 <!-- Modal -->
 <div class="modal fade" id="ticketDeleteModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form action="index.php?n=tickets&jobDelete=<?php echo $ticket['uid']; ?>" method="post">
+    <form action="index.php?n=tickets&ticketDelete=<?php echo $ticket['uid']; ?>" method="post">
 			<div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="staticBackdropLabel">Delete Ticket</h5>
