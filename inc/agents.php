@@ -87,5 +87,18 @@ class agents {
 		return $tickets;
 		
 	}
+	
+	public function ticketsOwnedBy($agentID = null) {
+		global $client;
+		
+		$searchText = "owner_id:" . $agentID . " AND state_id:2";
+		
+		$currentTickets = $client->resource( ResourceType::TICKET )->search($searchText);
+				
+		return $currentTickets;
+		
+	}
+	
+	
 }
 ?>

@@ -32,7 +32,7 @@
         <h1 class="card-title pricing-card-title">Agents</h1>
         <ul class="list-unstyled mt-3 mb-4">
           <li>Locate each Agent's ID from Zendesk</li>
-          <li>Setup the detais here</li>
+          <li>Setup the details here</li>
         </ul>
 				<a href="index.php?n=agents" role="button" class="btn btn-lg btn-block btn-outline-primary">Agents</a>
       </div>
@@ -66,10 +66,12 @@ $agentsClass = new agents();
   foreach ($agentsClass->getAgents() AS $agent) {
     $agent = $agent->getValues();
     
-    $currentTickets = $agent['preferences']['tickets_open'];
+    $currentTickets = $agentsClass->ticketsOwnedBy($agent['id']);
     
-    if ($currentTickets > 0) {
-      echo $agent['firstname'] . " " . $agent['lastname'] . ": Current Tickets = " . $agent['preferences']['tickets_open'] . "<br />";
+    $currentTicketsORIGINAL = $agent['preferences']['tickets_open'];
+    
+    if (count($currentTickets) > 0) {
+      echo $agent['firstname'] . " " . $agent['lastname'] . ": Current Tickets = " . count($currentTickets) . "<br />";
     }
     
   }
