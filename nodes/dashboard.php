@@ -19,6 +19,14 @@ $client->setAuth('basic', ['username' => $username, 'token' => $token]);
 		<p class="lead">Logs for cron tasks, ticket creation and agent changes.</p>
 	</div>
 
+<?php
+
+  $ticket = $client->resource(ResourceType::TICKET)->get(95017);
+echo "Here: " . print_r( $ticket->getValues() );
+
+
+?>
+
   <?php
   foreach ($teamMembersEnabled AS $teamMember) {
     //echo $teamMember->zendesk_id;

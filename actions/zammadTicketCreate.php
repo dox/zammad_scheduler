@@ -20,4 +20,3 @@ $ticket_data = [
 
 $ticket = $tickets->ticketCreateInZammad($ticket_data);
 ?>
-

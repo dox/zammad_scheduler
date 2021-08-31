@@ -18,7 +18,7 @@ if (isset($_POST['inputSubject'])) {
 	$ticket_create['zammad_customer'] = $_POST['inputLoggedBy'];
 	$ticket_create['cc'] = $_POST['inputCC'];
 	$ticket_create['status'] = "Enabled";
-	
+
 	$tickets->create($ticket_create);
 }
 ?>
@@ -32,39 +32,59 @@ if (isset($_POST['inputSubject'])) {
 	echo makeTitle($title, $subtitle, $icons);
 	?>
 
-	<h1>Daily</h1>
-	<p>These tasks will appear on Zendesk at 00:00 every day (Monday - Friday).</p>
-	<?php
-	foreach($tickets->getTickets('Daily') AS $ticket) {
-		echo $tickets->ticketDisplay($ticket['uid']);
-	}
-	?>
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+		<?php
+		foreach($agentsClass->groups() AS $groupID => $groupName) {
+				$output  = "<li class=\"nav-item\" role=\"presentation\">";
+				$output .= "<button class=\"nav-link\" id=\"tab-" . $groupID . "\" data-bs-toggle=\"tab\" data-bs-target=\"#content-" . $groupID . "\" type=\"button\" role=\"tab\" aria-controls=\"" . $groupName . "\" aria-selected=\"false\">" . $groupName . "</button>";
+				$output .= "</li>";
 
-	<h1 class="mt-3">Weekly</h1>
-	<p>These tasks will appear on Zendesk at 00:00 every Monday morning.</p>
-	<?php
-	foreach($tickets->getTickets('Weekly') AS $ticket) {
-		echo $tickets->ticketDisplay($ticket['uid']);
-	}
-	?>
+				echo $output;
+		}
+		?>
+	</ul>
 
-	<h1 class="mt-3">Monthly</h1>
-	<p>These tasks will appear on Zendesk at 00:00 on the 1st of every month.</p>
-	<?php
-	foreach($tickets->getTickets('Monthly') AS $ticket) {
-		echo $tickets->ticketDisplay($ticket['uid']);
-	}
-	?>
+	<div class="tab-content" id="myTabContent">
+		<?php
+		foreach($agentsClass->groups() AS $groupID => $groupName) {
 
-	<h1 class="mt-3">Yearly</h1>
-	<p>These tasks will appear on Zendesk at 00:00 once every year on the date(s) specified.</p>
-	<?php
-	foreach($tickets->getTickets('Yearly') AS $ticket) {
-		echo $tickets->ticketDisplay($ticket['uid']);
-	}
-	?>
+			$output  = "<div class=\"tab-pane fade\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
+
+			$output .= "<h1 class=\"mt-3\">Daily</h1>";
+			$output .= "<p>These tasks will appear on Zendesk at 00:00 every day (Monday - Friday).</p>";
+
+			foreach($tickets->getTicketsByGroup($groupID, 'Daily') AS $ticket) {
+				$output .= $tickets->ticketDisplay($ticket['uid']);
+			}
+
+			$output .= "<h1 class=\"mt-3\">Weekly</h1>";
+			$output .= "<p>These tasks will appear on Zendesk at 00:00 every Monday morning.</p>";
+
+			foreach($tickets->getTicketsByGroup($groupID, 'Weekly') AS $ticket) {
+				$output .= $tickets->ticketDisplay($ticket['uid']);
+			}
+
+			$output .= "<h1 class=\"mt-3\">Monthly</h1>";
+			$output .= "<p>These tasks will appear on Zendesk at 00:00 on the 1st of every month.</p>";
+
+			foreach($tickets->getTicketsByGroup($groupID, 'Monthly') AS $ticket) {
+				$output .= $tickets->ticketDisplay($ticket['uid']);
+			}
+
+			$output .= "<h1 class=\"mt-3\">Yearly</h1>";
+			$output .= "<p>These tasks will appear on Zendesk at 00:00 once every year on the date(s) specified.</p>";
+
+			foreach($tickets->getTicketsByGroup($groupID, 'Yearly') AS $ticket) {
+				$output .= $tickets->ticketDisplay($ticket['uid']);
+			}
+
+			$output .= "</div>";
+
+			echo $output;
+		}
+		?>
+	</div>
 </div>
-
 
 
 <!-- Modal -->
@@ -108,7 +128,7 @@ if (isset($_POST['inputSubject'])) {
 						<?php
 						foreach ($agentsClass->getAgents() AS $agent) {
 							$agent = $agent->getValues();
-							
+
 							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
 
 							echo $output;
@@ -163,5 +183,3 @@ if (isset($_POST['inputSubject'])) {
 		</form>
   </div>
 </div>
-
-

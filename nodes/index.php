@@ -63,17 +63,23 @@ $agentsClass = new agents();
 
 <div class="container">
   <?php
+  printArray($agentsClass->groups());
+
+
+
+
+
   foreach ($agentsClass->getAgents() AS $agent) {
     $agent = $agent->getValues();
-    
+
     $currentTickets = $agentsClass->ticketsOwnedBy($agent['id']);
-    
+
     $currentTicketsORIGINAL = $agent['preferences']['tickets_open'];
-    
+
     if (count($currentTickets) > 0) {
       echo $agent['firstname'] . " " . $agent['lastname'] . ": Current Tickets = " . count($currentTickets) . "<br />";
     }
-    
+
   }
   ?>
 </div>
