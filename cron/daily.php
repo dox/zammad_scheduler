@@ -17,6 +17,8 @@ foreach($tickets->getTickets('Daily') AS $ticket) {
 		],
 	];
 	
-	$tickets->ticketCreateInZammad($ticket_data);
+	if ($ticket['status'] == "Enabled") {
+		$tickets->ticketCreateInZammad($ticket_data);
+	}
 }
 ?>
