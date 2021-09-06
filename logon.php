@@ -93,6 +93,12 @@
 	      <input type="text" id="inputUsername" name="inputUsername" class="form-control" placeholder="Username" required autofocus>
 	      <label for="inputPassword" class="visually-hidden">Password</label>
 	      <input type="password" id="inputPassword" name="inputPassword" class="form-control" placeholder="Password" required>
+		  
+		  <div class="form-check">
+			  <input class="form-check-input" type="checkbox" value="true" id="remember" name="remember" checked>
+			  <label class="form-check-label" for="flexCheckChecked">Remember Me</label>
+			</div>
+			
 	      <button class="btn btn-lg btn-primary btn-block" type="submit">Log In</button>
 
 				<?php

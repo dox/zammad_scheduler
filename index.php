@@ -1,5 +1,6 @@
 <?php
 include_once("./inc/autoload.php");
+
 if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 	if ($ldap_connection->auth()->attempt($_POST['inputUsername'] . LDAP_ACCOUNT_SUFFIX, $_POST['inputPassword'], $stayAuthenticated = true)) {
 		// Successfully authenticated user.
@@ -10,6 +11,14 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 			$_SESSION['admin'] = true;
 		} else {
 			$_SESSION['admin'] = false;
+		}
+		
+		if ($_POST['remember'] == "true") {
+			$cookieTime = time() + (86400 * 30); // 86400 = 1 day
+			
+			setcookie("logon", $_SESSION['logon'], time() + (86400 * 30), "/");
+			setcookie("username", $_SESSION['username'], time() + (86400 * 30), "/");
+			setcookie("admin", $_SESSION['admin'], time() + (86400 * 30), "/");
 		}
 
 		$logRecord = new logs();
@@ -31,8 +40,14 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 }
 
 if ($_SESSION['logon'] != true) {
-	header("Location: logon.php");
-	exit;
+	if (isset($_COOKIE['username'])) {
+		$_SESSION['logon'] = $_COOKIE['logon'];
+		$_SESSION['username'] = $_COOKIE['username'];
+		$_SESSION['admin'] = $_COOKIE['admin'];
+	} else {
+		header("Location: logon.php");
+		exit;
+	}
 }
 ?>
 <!DOCTYPE html>
