@@ -68,7 +68,7 @@ $agentsClass = new agents();
 
 
 
-
+/*
   foreach ($agentsClass->getAgents() AS $agent) {
     $agent = $agent->getValues();
 
@@ -80,6 +80,6 @@ $agentsClass = new agents();
       echo $agent['firstname'] . " " . $agent['lastname'] . ": Current Tickets = " . count($currentTickets) . "<br />";
     }
 
-  }
+  }*/
   ?>
 </div>

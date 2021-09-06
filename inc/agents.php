@@ -100,23 +100,20 @@ class agents {
 	}
 
 	public function groups() {
-		//global $client;
+		global $client;
 
-		//$groupsObject = $client->resource(ResourceType::GROUP)->all();
-		//$groups = $groupsObject[2]->getValues();
-
-		/*
-		printArray($groups);
-
-		foreach ($groups AS $group) {
-			$groupArray[$group['id']] = $group['name'];
+		$groupsObject = $client->resource(ResourceType::GROUP)->all();
+			
+			$groupArray = array();
+		foreach ($groupsObject AS $groupObject) {
+			if (!is_array($groupObject)) {
+				$groupObject = $groupObject->getValues();
+			
+				$groupArray[$groupObject['id']] = $groupObject['name'];
+			}
 		}
-		*/
-
-		$groupArray[2] = "IT Support";
-		$groupArray[3] = "Maintenance";
-		$groupArray[4] = "Housekeeping";
-		$groupArray[5] = "Gardens";
+		
+		$groupArray = array_unique($groupArray);
 
 		return $groupArray;
 	}

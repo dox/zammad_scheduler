@@ -1,125 +1,127 @@
 <?php
-require_once 'vendor/autoload.php';
-echo zammad_username;
+include_once("./inc/autoload.php");
 
-
-echo "test";
-echo "<pre>";
-
-require_once 'vendor/autoload.php';
-
-$zammad_api_client_config = [
-    'url' => 'https://help.seh.ox.ac.uk',
-
-    // with username and password
-    'username' => 'breakspear',
-    'password' => 'P!ssport7',
-    'debug'         => false
-    // or with HTTP token:
-    // 'http_token' => '...',
-
-    // or with OAuth2 token:
-    //'oauth2_token' => '...',
-];
-
-use ZammadAPIClient\Client;
-use ZammadAPIClient\ResourceType;
-
-
-$client = new Client($zammad_api_client_config);
-
-$email_address = "andrew.breakspear@seh.ox.ac.uk";
-
-$users = $client->resource( ResourceType::USER )->search("role_ids:2");
-if ( !is_array($users) ) {
-    exitOnError($users);
-} else {
-    print 'Found ' . count($users) . ' user(s) ' . "\n";
-
+if ($_SESSION['logon'] != true) {
+  header("Location: logon.php");
+  exit;
 }
-
-echo "<hr />";
-
-
-
-$ticket_text = "owner.email:andrew.breakspear@seh.ox.ac.uk";
-$tickets = $client->resource( ResourceType::TICKET )->search($ticket_text);
-    if ( !is_array($tickets) ) {
-        exitOnError($tickets);
-    } else {
-        print 'Found ' . count($tickets) . ' ticket(s) with text ' . $ticket_text . "\n";
-    }
-    
-    
-    
-
-
-
-
-
-//
-// Create a ticket
-//
-$ticket_text = 'API test ticket';
-
-$ticket_data = [
-    'group_id'    => 1,
-    'priority_id' => 1,
-    'state_id'    => 1,
-    'title'       => $ticket_text,
-    'customer_id' => 1,
-    'article'     => [
-        'subject' => $ticket_text,
-        'body'    => $ticket_text,
-    ],
-];
-
-$ticket = $client->resource( ResourceType::TICKET );
-$ticket->setValues($ticket_data);
-//$ticket->save();
-exitOnError($ticket);
-
-$ticket_id = $ticket->getID(); // same as getValue('id')
-
-//
-// Fetch ticket
-//
-$ticket = $client->resource( ResourceType::TICKET )->get($ticket_id);
-exitOnError($ticket);
-print_r( $ticket->getValues() );
-
-//
-// Fetch ticket articles
-//
-$ticket_articles = $ticket->getTicketArticles();
-foreach ( $ticket_articles as $ticket_article ) {
-    print_r($ticket_article);
-}
-
-//
-// Search ticket
-//
-$tickets = $client->resource( ResourceType::TICKET )->search($ticket_text);
-if ( !is_array($tickets) ) {
-    exitOnError($tickets);
-} else {
-    print 'Found ' . count($tickets) . ' ticket(s) with text ' . $ticket_text . "\n";
-}
-
-//
-// Delete created ticket
-//
-//$ticket->delete();
-//exitOnError($ticket);
-
-function exitOnError($object) {
-    if ( $object->hasError() ) {
-        print $object->getError() . "\n";
-        exit(1);
-    }
-}
-
-
-
-echo "</pre>";
 ?>
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Andrew Breakspear">
+  <title>Task Scheduler</title>
+  
+  <!-- Bootstrap core CSS/JS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+  <!-- JavaScript Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+  
+  <script src="js/app.js"></script>
+</head>
+
+<body class="bg-light">
+  <?php
+  use Zendesk\API\HttpClient as ZendeskAPI;
+  use ZammadAPIClient\Client;
+  use ZammadAPIClient\ResourceType;
+  
+  
+  $agentID = '1713';
+
+  
+  
+  $currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $agentID . " AND state_id:2");
+  
+
+  
+  
+   
+  ?>
+  
+  <div class="container">
+      <?php
+      $title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Tickets";
+      $subtitle = "Daily, weekly, monthly and yearly tickets that are auto-scheduled to appear on Zendesk.";
+  
+      echo makeTitle($title, $subtitle);
+      ?>
+  
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">My Tickets (<?php echo count($currentTickets); ?>)</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="#">Inactive</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="#">Inactive</a>
+          </li>
+      </ul>
+  
+      <div class="tab-content" id="myTabContent">
+        <?php
+        $output  = "<div class=\"row\">";
+        $output .= "<div class=\"col\">";
+        
+        foreach ($currentTickets AS $ticket) {
+           if (!is_array($ticket)) {
+             $ticket = $ticket->getValues();
+             
+             
+             $output .= "<div class=\"card mb-3\" id=\"ticketID-" . $ticket['id'] . "\" data-bs-toggle=\"modal\"  data-bs-target=\"#menuModal\" onclick=\"displayMenu(this.id)\">";
+               $output .= "<div class=\"card-body\">";
+                 $output .= "<h5 class=\"card-title\">" . $ticket['title'] . "</h5>";
+                 $output .= "<h6 class=\"card-subtitle mb-2 text-muted\">Created by " . $ticket['customer_id'] . " on " . $ticket['created_at'] . "</h6>";
+                 //$output .= "<p class=\"card-text\">With supporting text below as a natural lead-in to additional content.</p>";
+               $output .= "</div>"; //card-body
+             $output .= "</div>"; //card
+             
+             
+             
+             //printArray($ticket);
+           }
+           
+           
+         }
+         
+         $output .= "</div>"; //col
+         $output .= "</div>"; //row
+         
+         echo $output;
+          ?>
+      </div>
+  </div>
+</body>
+</html>
+
+<div class="modal fade" id="menuModal" tabindex="-1" aria-labelledby="menuModal" aria-hidden="true">
+  <div class="modal-dialog  ">
+    <div class="modal-content">
+      <div id="menuContentDiv"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function displayMenu(this_id) {
+    var ticketID = this_id.replace("ticketID-", "");
+    var request = new XMLHttpRequest();
+  
+    request.open('GET', '/test.php?ticketID=' + ticketID, true);
+    //request.open('GET', '/test.php', true);
+  
+    request.onload = function() {
+      if (request.status >= 200 && request.status < 400) {
+        var resp = request.responseText;
+  
+        menuContentDiv.innerHTML = resp;
+      }
+    };
+  
+    request.send();
+  }
+</script>

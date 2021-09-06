@@ -108,10 +108,13 @@ if (isset($_POST['inputSubject'])) {
 				<div class="mb-3">
 					<label for="inputGroup" class="form-label">Ticket Group</label>
 					<select class="form-select" id="inputGroup" name="inputGroup">
-						<option value="3">Maintenance</option>
-						<option value="2">IT Support</option>
-						<option value="5">Gardens</option>
-						<option value="4">Housekeeping</option>
+						<?php
+						foreach ($agentsClass->groups() AS $groupID => $groupName) {
+							$output = "<option value=\"" . $groupID . "\">" . $groupName . "</option>";
+	
+							echo $output;
+						}
+						?>
 					</select>
 				</div>
 				<div class="mb-3">

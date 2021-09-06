@@ -51,10 +51,17 @@ if (!empty($_POST)) {
 		<div class="col-md-4 mb-3">
 			<label for="inputGroup" class="form-label">Ticket Group</label>
 			<select class="form-select" id="inputGroup" name="inputGroup">
-				<option value="3" <?php if ($ticket['zammad_group'] == "3") { echo " selected";}?>>Maintenance</option>
-				<option value="2" <?php if ($ticket['zammad_group'] == "2") { echo " selected";}?>>IT Support</option>
-				<option value="5"<?php if ($ticket['zammad_group'] == "5") { echo " selected";}?> >Gardens</option>
-				<option value="4"<?php if ($ticket['zammad_group'] == "4") { echo " selected";}?> >Housekeeping</option>
+				<?php
+				foreach ($agentsClass->groups() AS $groupID => $groupName) {
+					$output  = "<option value=\"" . $groupID;
+					if ($ticket['zammad_group'] == "3") {
+						$output .= " selected ";
+					}
+					$output .= "\">" . $groupName . "</option>";
+
+					echo $output;
+				}
+				?>
 			</select>
 		</div>
 		<div class="col-md-4 mb-3">
