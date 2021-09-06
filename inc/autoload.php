@@ -19,6 +19,10 @@ require ('vendor/autoload.php');
 
 use LdapRecord\Connection;
 
+use Zendesk\API\HttpClient as ZendeskAPI;
+use ZammadAPIClient\Client;
+use ZammadAPIClient\ResourceType;
+
 // Create a new connection:
 $ldap_connection = new Connection([
     'hosts' => [LDAP_SERVER],
@@ -40,19 +44,11 @@ try {
 
 $zammad_api_client_config = [
     'url' => zammad_url,
-
-    // with username and password
-    'username' => zammad_username,
-    'password' => zammad_password,
-    'debug'         => zammad_debug
-    // or with HTTP token:
-    // 'http_token' => '...',
-
-    // or with OAuth2 token:
-    //'oauth2_token' => '...',
+    'debug'         => zammad_debug,
+     'http_token' => zammad_token
 ];
 
-
+$client = new Client($zammad_api_client_config);
 
 require_once('inc/globalfunctions.php');
 require_once('inc/database.php');

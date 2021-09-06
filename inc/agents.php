@@ -1,18 +1,12 @@
 <?php
-use ZammadAPIClient\Client;
-use ZammadAPIClient\ResourceType;
-
-$client = new Client($zammad_api_client_config);
-
 $email_address = "andrew.breakspear@seh.ox.ac.uk";
-
 
 class agents {
 
 	public function getAgents() {
 		global $client;
 
-		$agents = $client->resource( ResourceType::USER )->search("role_ids:2 AND active:true");
+		$agents = $client->resource(ZammadAPIClient\ResourceType::USER )->search("role_ids:2 AND active:true");
 
 		if ( !is_array($agents) ) {
 			exitOnError($agents);
@@ -29,14 +23,12 @@ class agents {
 		} else {
 
 
-			$agent = $client->resource( ResourceType::USER )->get($id);
+			$agent = $client->resource( ZammadAPIClient\ResourceType::USER )->get($id);
 			$agent = $agent->getValues();
 
 			$_SESSION['cached_agents'][$agent['id']] = $agent;
 		}
-
-
-
+		
 		return $agent;
 	}
 
@@ -93,7 +85,7 @@ class agents {
 
 		$searchText = "owner_id:" . $agentID . " AND state_id:2";
 
-		$currentTickets = $client->resource( ResourceType::TICKET )->search($searchText);
+		$currentTickets = $client->resource(ZammadAPIClient\ResourceType::TICKET )->search($searchText);
 
 		return $currentTickets;
 
@@ -102,7 +94,7 @@ class agents {
 	public function groups() {
 		global $client;
 
-		$groupsObject = $client->resource(ResourceType::GROUP)->all();
+		$groupsObject = $client->resource(ZammadAPIClient\ResourceType::GROUP)->all();
 			
 			$groupArray = array();
 		foreach ($groupsObject AS $groupObject) {

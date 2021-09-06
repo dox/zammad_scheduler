@@ -1,8 +1,4 @@
 <?php
-use Zendesk\API\HttpClient as ZendeskAPI;
-use ZammadAPIClient\Client;
-use ZammadAPIClient\ResourceType;
-
 class tickets {
 	protected static $table_name = "tickets";
 
@@ -73,7 +69,30 @@ class tickets {
 
 		return $tickets;
 	}
-
+	
+	public function ticketObjectGetFromZammad($ticketID = null) {
+		global $client;
+		
+		$ticketObject = $client->resource(ZammadAPIClient\ResourceType::TICKET )->get($ticketID);
+		exitOnError($ticketObject);
+		
+		return $ticketObject;
+	}
+	
+	public function ticketValuesGetFromZammad($ticketID = null) {		
+		$ticketObject = $this->ticketObjectGetFromZammad($ticketID);
+		$ticketValues = $ticketObject->getValues();
+		
+		return $ticketValues;
+	}
+	
+	public function ticketArticlesGetFromZammad($ticketID = null) {		
+		$ticketObject = $this->ticketObjectGetFromZammad($ticketID);
+		$ticketArticles = $ticketObject->getTicketArticles();
+		
+		return $ticketArticles;
+	}
+	
 	public function ticketCreateInZammad($ticket = null) {
 		global $client;
 
@@ -90,7 +109,7 @@ class tickets {
 			],
 		];
 
-		$ticket = $client->resource( ResourceType::TICKET );
+		$ticket = $client->resource(ZammadAPIClient\ResourceType::TICKET );
 		$ticket->setValues($ticket_data);
 		$ticket->save();
 		exitOnError($ticket);

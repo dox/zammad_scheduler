@@ -18,5 +18,5 @@ $ticket_data = [
 	],
 ];
 
-$ticket = $tickets->ticketCreateInZammad($ticket_data);
+$tickets->ticketCreateInZammad($ticket_data);
 ?>

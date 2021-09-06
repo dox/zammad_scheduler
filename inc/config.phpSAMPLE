@@ -8,8 +8,7 @@ define ("db_password", "YOUR-PASSWORD");
 
 define ("zammad_debug", false);
 define ("zammad_url", "https://your-zammad-domain");
-define ("zammad_username", "username");
-define ("zammad_password", "password");
+define ("zammad_token", "zammad-token-here");
 
 define ("log_retention", 180); // days to keep logs
 

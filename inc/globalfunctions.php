@@ -5,7 +5,7 @@ print_r ($array);
 echo ("</pre>");
 }
 
-function makeTitle($title = null, $subtitle = nulll, $iconsArray = null) {
+function makeTitle($title = null, $subtitle = null, $iconsArray = null) {
 	$output  = "<div class=\"px-3 py-3 pt-md-5 pb-md-4 text-center\">";
 	$output .= "<h1 class=\"display-4\">" . $title . "</h1>";
 	
