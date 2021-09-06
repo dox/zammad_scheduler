@@ -41,6 +41,13 @@ $currentPage = basename($_SERVER["SCRIPT_FILENAME"], '.php');
 					</svg> Logs
 				</a>
 			</li>
+			<li class="nav-item <?php if($currentPage == "tickets_agentview") { echo "active";}?>">
+				<a class="nav-link" href="index.php?n=tickets_agentview">
+					<svg width="1em" height="1em">
+						<use xlink:href="inc/icons.svg#agentview"/>
+					</svg> Agent View
+				</a>
+			</li>
 		</ul>
 	</div>
 </div>

@@ -31,14 +31,20 @@ $ticket_articles = $ticketObject->getTicketArticles();
 	<?php
 	foreach ($ticket_articles AS $ticket_article) {
 		$article_content = $ticket_article->getValues();
+		if ($article_content['sender'] != "System" ) {
+			//printArray($article_content);
+			$output  = "";
+			$output .= $article_content['body'];
+			$output .= "<hr />";
+			
+			echo $output;
+		}
 		
 		
 		
-		$output  = "";
-		$output .= $article_content['body'];
-		$output .= "<hr />";
 		
-		echo $output;
+		
+		
 	}
 	?>
 	
