@@ -45,7 +45,7 @@ $currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" 
 				$output .= "<div class=\"card mb-3\" id=\"ticketID-" . $ticket['id'] . "\" data-bs-toggle=\"modal\"  data-bs-target=\"#menuModal\" onclick=\"displayMenu(this.id)\">";
 				$output .= "<div class=\"card-body\">";
 				$output .= "<h5 class=\"card-title\">" . $ticket['title'] . "</h5>";
-				$output .= "<h6 class=\"card-subtitle mb-2 text-muted\">" . $customer['firstname'] . " " . $customer['lastname'] . " on " . $ticket['created_at'] . "</h6>";
+				$output .= "<h6 class=\"card-subtitle mb-2 text-muted\">" . $customer['firstname'] . " " . $customer['lastname'] . " on " . dateDisplay($ticket['created_at']) . "</h6>";
 				//$output .= " This is: " . $customer['firstname'] . " " . $customer['lastname'];
 				//$output .= "<p class=\"card-text\">With supporting text below as a natural lead-in to additional content.</p>";
 				$output .= "</div>"; //card-body

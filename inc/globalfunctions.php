@@ -32,4 +32,18 @@ function exitOnError($object) {
 		exit(1);
 	}
 }
+
+function dateDisplay($date = null, $showTime = true) {
+	$cleanDate = strtotime($date);
+	
+	if ($showTime == true) {
+		$format = "Y-m-d H:m";
+	} else {
+		$format = "Y-m-d";
+	}
+	
+	$cleanDate = date($format, $cleanDate);
+	
+	return $cleanDate;
+}
 ?>
