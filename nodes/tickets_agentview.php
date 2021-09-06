@@ -3,7 +3,9 @@ use Zendesk\API\HttpClient as ZendeskAPI;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
-$agentID = '1713';
+$users = $client->resource( ResourceType::USER )->search("login:" . $_SESSION['username']);
+$user = $users[0]->getValues();
+$agentID = $user['id'];
 
 $currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $agentID . " AND state_id:2");
 ?>
