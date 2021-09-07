@@ -1,6 +1,14 @@
 <?php
 include_once("./inc/autoload.php");
 
+if (isset($_GET['logout'])) {
+	$_SESSION = array();
+	unset($_COOKIE['logon']);
+	unset($_COOKIE['username']);
+	unset($_COOKIE['admin']);
+	unset($_COOKIE['user_id']);
+}
+
 if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 	if ($ldap_connection->auth()->attempt($_POST['inputUsername'] . LDAP_ACCOUNT_SUFFIX, $_POST['inputPassword'], $stayAuthenticated = true)) {
 		// Successfully authenticated user.
@@ -13,12 +21,17 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 			$_SESSION['admin'] = false;
 		}
 		
+		$users = $client->resource( ZammadAPIClient\ResourceType::USER )->search("login:" . $_SESSION['username']);
+		$user = $users[0]->getValues();
+		$_SESSION['user_id'] = $user['id'];
+		
 		if ($_POST['remember'] == "true") {
 			$cookieTime = time() + (86400 * 30); // 86400 = 1 day
 			
-			setcookie("logon", $_SESSION['logon'], time() + (86400 * 30), "/");
-			setcookie("username", $_SESSION['username'], time() + (86400 * 30), "/");
-			setcookie("admin", $_SESSION['admin'], time() + (86400 * 30), "/");
+			setcookie("logon", $_SESSION['logon'], $cookieTime, "/");
+			setcookie("username", $_SESSION['username'], $cookieTime, "/");
+			setcookie("admin", $_SESSION['admin'], $cookieTime, "/");
+			setcookie("user_id", $_SESSION['user_id'], $cookieTime, "/");
 		}
 
 		$logRecord = new logs();

@@ -3,13 +3,9 @@ use Zendesk\API\HttpClient as ZendeskAPI;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
-$users = $client->resource( ResourceType::USER )->search("login:" . $_SESSION['username']);
-$user = $users[0]->getValues();
-$agentID = $user['id'];
-
 $agentsClass = new agents();
 
-$currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $agentID . " AND state_id:2");
+$currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $_SESSION['user_id'] . " AND (state_id:2 OR state_id:3 OR state_id:5)");
 ?>
 
 <div class="container">

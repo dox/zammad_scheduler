@@ -17,10 +17,6 @@ exitOnError($ticketObject);
 
 $ticket = $ticketObject->getValues();
 $ticket_articles = $ticketObject->getTicketArticles();
-
-//printArray($ticket);
-
-
 ?>
 
 <div class="modal-header">
@@ -56,7 +52,7 @@ $ticket_articles = $ticketObject->getTicketArticles();
 			foreach ($agentsClass->getAgents() AS $agent) {
 				$agent = $agent->getValues();
 				$output  = "<option value=\"" . $agent['id'] . "\"";
-				if ($ticket['zammad_agent'] == $agent['id']) {
+				if ($ticket['owner_id'] == $agent['id']) {
 					$output .= " selected";
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
