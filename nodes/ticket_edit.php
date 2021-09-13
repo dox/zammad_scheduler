@@ -53,11 +53,11 @@ if (!empty($_POST)) {
 			<select class="form-select" id="inputGroup" name="inputGroup">
 				<?php
 				foreach ($agentsClass->groups() AS $groupID => $groupName) {
-					$output  = "<option value=\"" . $groupID;
-					if ($ticket['zammad_group'] == "3") {
+					$output  = "<option value=\"" . $groupID . "\"";
+					if ($groupID == $ticket['zammad_group']) {
 						$output .= " selected ";
 					}
-					$output .= "\">" . $groupName . "</option>";
+					$output .= ">" . $groupName . "</option>";
 
 					echo $output;
 				}
