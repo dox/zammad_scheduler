@@ -6,6 +6,7 @@ use ZammadAPIClient\ResourceType;
 $agentsClass = new agents();
 
 $currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $_SESSION['user_id'] . " AND (state_id:2 OR state_id:3 OR state_id:5)");
+$unassignedTickets = $client->resource( ResourceType::TICKET )->search("state_id:1 AND owner_id:1");
 ?>
 
 <div class="container">
@@ -17,45 +18,74 @@ $currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" 
 	
 	<ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
 		<li class="nav-item">
-			<a class="nav-link active" aria-current="page" href="#">My Tickets (<?php echo count($currentTickets); ?>)</a>
-		</li>
-		<!--<li class="nav-item">
-			<a class="nav-link" aria-current="page" href="#">Inactive</a>
+			<button class="nav-link active" id="my-tab" data-bs-toggle="tab" data-bs-target="#myTickets" type="button" role="tab" aria-controls="unassigned" aria-selected="true">My Tickets (<?php echo count($currentTickets); ?>)</button>
 		</li>
 		<li class="nav-item">
-			<a class="nav-link" aria-current="page" href="#">Inactive</a>
-		</li>-->
+			<button class="nav-link" id="unassigned-tab" data-bs-toggle="tab" data-bs-target="#unassignedTickets" type="button" role="tab" aria-controls="unassigned" aria-selected="true">Unassigned (<?php echo count($unassignedTickets); ?>)</button>
+		</li>
 	</ul>
 	
-	<div class="tab-content" id="myTabContent">
-		<?php
-		$output  = "<div class=\"row\">";
-		$output .= "<div class=\"col\">";
-		
-		foreach ($currentTickets AS $ticket) {
-			if (!is_array($ticket)) {
-				$ticket = $ticket->getValues();
-				
-				$customer = $agentsClass->getAgent($ticket['customer_id']);
-				
-				$output .= "<div class=\"card mb-3\" id=\"ticketID-" . $ticket['id'] . "\" data-bs-toggle=\"modal\"  data-bs-target=\"#menuModal\" onclick=\"displayMenu(this.id)\">";
-				$output .= "<div class=\"card-body\">";
-				$output .= "<h5 class=\"card-title\">" . $ticket['title'] . "</h5>";
-				$output .= "<h6 class=\"card-subtitle mb-2 text-muted\">" . $customer['firstname'] . " " . $customer['lastname'] . " on " . dateDisplay($ticket['created_at']) . "</h6>";
-				//$output .= " This is: " . $customer['firstname'] . " " . $customer['lastname'];
-				//$output .= "<p class=\"card-text\">With supporting text below as a natural lead-in to additional content.</p>";
-				$output .= "</div>"; //card-body
-				$output .= "</div>"; //card
-				
-				//printArray($ticket);
+	<div class="tab-content">
+		<div class="tab-pane fade show active" id="myTickets" role="tabpanel" aria-labelledby="my-tab">
+			<?php
+			$output  = "<div class=\"row\">";
+			$output .= "<div class=\"col\">";
+			
+			foreach ($currentTickets AS $ticket) {
+				if (!is_array($ticket)) {
+					$ticket = $ticket->getValues();
+					
+					$customer = $agentsClass->getAgent($ticket['customer_id']);
+					
+					$output .= "<div class=\"card mb-3\" id=\"ticketID-" . $ticket['id'] . "\" data-bs-toggle=\"modal\"  data-bs-target=\"#menuModal\" onclick=\"displayMenu(this.id)\">";
+					$output .= "<div class=\"card-body\">";
+					$output .= "<h5 class=\"card-title\">" . $ticket['title'] . "</h5>";
+					$output .= "<h6 class=\"card-subtitle mb-2 text-muted\">" . $customer['firstname'] . " " . $customer['lastname'] . " on " . dateDisplay($ticket['created_at']) . "</h6>";
+					//$output .= " This is: " . $customer['firstname'] . " " . $customer['lastname'];
+					//$output .= "<p class=\"card-text\">With supporting text below as a natural lead-in to additional content.</p>";
+					$output .= "</div>"; //card-body
+					$output .= "</div>"; //card
+					
+					//printArray($ticket);
+				}
 			}
-		}
-		 
-		$output .= "</div>"; //col
-		$output .= "</div>"; //row
-		 
-		echo $output;
-		?>
+			 
+			$output .= "</div>"; //col
+			$output .= "</div>"; //row
+			 
+			echo $output;
+			?>
+		</div>
+		<div class="tab-pane fade" id="unassignedTickets" role="tabpanel" aria-labelledby="unassigned-tab">
+			<?php
+			$output  = "<div class=\"row\">";
+			$output .= "<div class=\"col\">";
+			
+			foreach ($unassignedTickets AS $ticket) {
+				if (!is_array($ticket)) {
+					$ticket = $ticket->getValues();
+					
+					$customer = $agentsClass->getAgent($ticket['customer_id']);
+					
+					$output .= "<div class=\"card mb-3\" id=\"ticketID-" . $ticket['id'] . "\" data-bs-toggle=\"modal\"  data-bs-target=\"#menuModal\" onclick=\"displayMenu(this.id)\">";
+					$output .= "<div class=\"card-body\">";
+					$output .= "<h5 class=\"card-title\">" . $ticket['title'] . "</h5>";
+					$output .= "<h6 class=\"card-subtitle mb-2 text-muted\">" . $customer['firstname'] . " " . $customer['lastname'] . " on " . dateDisplay($ticket['created_at']) . "</h6>";
+					//$output .= " This is: " . $customer['firstname'] . " " . $customer['lastname'];
+					//$output .= "<p class=\"card-text\">With supporting text below as a natural lead-in to additional content.</p>";
+					$output .= "</div>"; //card-body
+					$output .= "</div>"; //card
+					
+					//printArray($ticket);
+				}
+			}
+			 
+			$output .= "</div>"; //col
+			$output .= "</div>"; //row
+			 
+			echo $output;
+			?>
+		</div>
 	</div>
 </div>
 
