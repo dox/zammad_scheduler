@@ -4,7 +4,7 @@ $email_address = "andrew.breakspear@seh.ox.ac.uk";
 class agents {
 
 	public function getAgents() {
-		global $client;
+		/*global $client;
 
 		$agents = $client->resource(ZammadAPIClient\ResourceType::USER )->search("role_ids:2 AND active:true");
 
@@ -13,22 +13,37 @@ class agents {
 		}
 
 		return $agents;
+		*/
+		global $database;
+		
+		$sql  = "SELECT * FROM agents";
+		$sql .= " ORDER BY lastname DESC";
+		
+		$agents = $database->query($sql)->fetchAll();
+	
+		return $agents;
+	}
+	
+	public function getAgentsByGroup($groupID = null) {
+		global $database;
+		
+		$sql  = "SELECT * FROM agents";
+		$sql .= " WHERE group_id = '" . $groupID . "' ";
+		$sql .= " ORDER BY lastname DESC";
+		
+		$agents = $database->query($sql)->fetchAll();
+	
+		return $agents;
 	}
 
-	public static function getAgent($id = null) {
-		global $client;
-
-		if (array_key_exists($id, $_SESSION['cached_agents'])) {
-			$agent = $_SESSION['cached_agents'][$id];
-		} else {
-
-
-			$agent = $client->resource( ZammadAPIClient\ResourceType::USER )->get($id);
-			$agent = $agent->getValues();
-
-			$_SESSION['cached_agents'][$agent['id']] = $agent;
-		}
+	public  function getAgent($id = null) {
+		global $database;
 		
+		$sql  = "SELECT * FROM agents";
+		$sql .= " WHERE agent_id = '" . $id . "' ";
+		
+		$agent = $database->query($sql)->fetchArray();
+	
 		return $agent;
 	}
 

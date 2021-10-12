@@ -5,8 +5,9 @@ use ZammadAPIClient\ResourceType;
 
 $agentsClass = new agents();
 
-$currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $_SESSION['user_id'] . " AND (state_id:2 OR state_id:3 OR state_id:5)");
-$unassignedTickets = $client->resource( ResourceType::TICKET )->search("state_id:1 AND owner_id:1");
+$currentTickets = $client->resource( ResourceType::TICKET )->search("owner_id:" . $_SESSION['user_id'] . " AND (state_id:1 OR state_id:2 OR state_id:3 OR state_id:5)");
+$unassignedTickets = $client->resource( ResourceType::TICKET )->search("owner_id:1 AND (state_id:1 OR state_id:2)");
+
 ?>
 
 <div class="container">

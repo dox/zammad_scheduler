@@ -48,11 +48,11 @@ $ticket_articles = $ticketObject->getTicketArticles();
 	<div class="mb-3">
 		<label for="owner_id" class="form-label">Owner</label>
 		<select class="form-select" id="owner_id" name="owner_id">
+			<option></option>
 			<?php
 			foreach ($agentsClass->getAgents() AS $agent) {
-				$agent = $agent->getValues();
-				$output  = "<option value=\"" . $agent['id'] . "\"";
-				if ($ticket['owner_id'] == $agent['id']) {
+				$output  = "<option value=\"" . $agent['agent_id'] . "\"";
+				if ($ticket['owner_id'] == $agent['agent_id']) {
 					$output .= " selected";
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
@@ -79,4 +79,5 @@ $ticket_articles = $ticketObject->getTicketArticles();
 		  </div>
 	</div>
 </div>
+<br /><br />
 </form>

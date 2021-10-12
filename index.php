@@ -24,6 +24,7 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$users = $client->resource( ZammadAPIClient\ResourceType::USER )->search("login:" . $_SESSION['username']);
 		$user = $users[0]->getValues();
 		$_SESSION['user_id'] = $user['id'];
+		$_SESSION['group_ids'] = $user['group_ids'];
 		
 		if ($_POST['remember'] == "true") {
 			$cookieTime = time() + (86400 * 30); // 86400 = 1 day
