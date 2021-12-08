@@ -58,15 +58,49 @@ class tickets {
 
 	public static function getTicketsByGroup($groupID = null, $filter = "all") {
 		global $database;
-
+	
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_group = '" . $groupID . "'";
 		if ($filter != "all") {
 			$sql .= " AND frequency = '" . $filter . "'";
 		}
-
+	
 		$tickets = $database->query($sql)->fetchAll();
-
+	
+		return $tickets;
+	}
+	
+	public static function getTicketsByAgent($ownerID = null) {
+		global $database;
+	
+		$sql  = "SELECT * FROM " . self::$table_name;
+		$sql .= " WHERE zammad_agent = '" . $ownerID . "'";
+	
+		$tickets = $database->query($sql)->fetchAll();
+	
+		return $tickets;
+	}
+	
+	public static function getTicketsByCustomer($ownerID = null) {
+		global $database;
+	
+		$sql  = "SELECT * FROM " . self::$table_name;
+		$sql .= " WHERE zammad_customer = '" . $ownerID . "'";
+	
+		$tickets = $database->query($sql)->fetchAll();
+	
+		return $tickets;
+	}
+	
+	public static function getTicketsByAgentOrCustomer($ownerID = null) {
+		global $database;
+	
+		$sql  = "SELECT * FROM " . self::$table_name;
+		$sql .= " WHERE zammad_customer = '" . $ownerID . "'";
+		$sql .= " OR zammad_agent = '" . $ownerID . "'";
+	
+		$tickets = $database->query($sql)->fetchAll();
+	
 		return $tickets;
 	}
 	

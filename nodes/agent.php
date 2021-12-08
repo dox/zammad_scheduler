@@ -15,30 +15,22 @@ $ticketsClass = new tickets();
 
 	<div class="row">
 		<div class="col-lg-6 mb-3">
-			<p>Zammad ID: <?php echo $agent['id']; ?></p>
+			<p>Zammad ID: <?php echo $agent['agent_id']; ?></p>
 			<p>First Name: <?php echo $agent['firstname']; ?></p>
 			<p>Last Name: <?php echo $agent['lastname']; ?></p>
-			<p>Email: <?php echo $agent['email']; ?></p>
-			<p>Mobile: <?php echo $agent['mobile']; ?></p>
-			<p>Login: <?php echo $agent['login']; ?></p>
-			<p>Active: <?php echo $agent['active']; ?></p>
-			<p>Last Login: <?php echo $agent['last_login']; ?></p>
+			<p>Login: <?php echo $agent['ldap']; ?></p>
+			<p>Zammad Agent ID: <?php echo $agent['agent_id']; ?></p>
+			<p>Zammad Group: <?php echo $agent['group_id']; ?></p>
 
 		</div>
 
 		<div class="col-lg-6">
 			<h4>Jobs assigned to/logged by:</h4>
 			<?php
-			foreach($agentsClass->ticketsInvolvedWith($agent['id']) AS $ticket) {
+			foreach(tickets::getTicketsByAgentOrCustomer($agent['agent_id']) AS $ticket) {
 					echo $ticketsClass->ticketDisplay($ticket['uid']);
 			}
 			?>
 		</div>
 	</div>
 </div>
-
-
-<?php
-printArray($agent);
-
-?>

@@ -48,13 +48,14 @@ class agents {
 	}
 
 	public function displayAgents() {
+		//$jobs = new jobs();
 
 		$output  = "<table class=\"table table-striped\">";
 		$output .= "<thead>";
 		$output .= "<tr>";
-		$output .= "<th scope=\"col\">ID</th>";
+		$output .= "<th scope=\"col\">Agent ID</th>";
 		$output .= "<th>Name</th>";
-		$output .= "<th>Email</th>";
+		$output .= "<th>Group</th>";
 		$output .= "<th><span class=\"float-end\">Jobs Logged/Assigned</span></th>";
 		$output .= "</tr>";
 		$output .= "</thead>";
@@ -62,16 +63,16 @@ class agents {
 		$output .= "<tbody>";
 
 		foreach ($this->getAgents() AS $agent) {
-			$agent = $agent->getValues();
+			//$agent = $agent->getValues();
 
-			$agentURL = "index.php?n=agent&agentUID=" . $agent['id'];
-			//$jobsLogged = jobs::jobs_logged($agent->zendesk_id);
-			//$jobsAssigned = jobs::jobs_assigned($agent->zendesk_id);
+			$agentURL = "index.php?n=agent&agentUID=" . $agent['agent_id'];
+			$jobsLogged = tickets::getTicketsByAgent($agent['agent_id']);
+			$jobsAssigned = tickets::getTicketsByCustomer($agent['agent_id']);
 
 			$output .= "<tr>";
-			$output .= "<td>" . $agent['id'] . "</td>";
+			$output .= "<td>" . $agent['agent_id'] . "</td>";
 			$output .= "<td><a href=\"" . $agentURL . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</a></td>";
-			$output .= "<td>" . $agent['email'] . "</td>";
+			$output .= "<td>" . $agent['group_id'] . "</td>";
 			$output .= "<td><span class=\"float-end\"><span class=\"badge bg-primary\">" . count($jobsLogged) . "</span> / <span class=\"badge bg-success\">" . count($jobsAssigned) . "<span></span></td>";
 			$output .= "</tr>";
 		}

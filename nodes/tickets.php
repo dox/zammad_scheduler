@@ -130,10 +130,8 @@ if (isset($_POST['inputSubject'])) {
 					<select class="form-select" id="inputLoggedBy" name="inputLoggedBy">
 						<?php
 						foreach ($agentsClass->getAgents() AS $agent) {
-							$agent = $agent->getValues();
-
-							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
-
+							$output  = "<option value=\"" . $agent['agent_id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
+						
 							echo $output;
 						}
 						?>
@@ -144,9 +142,7 @@ if (isset($_POST['inputSubject'])) {
 					<select class="form-select" id="inputAssignTo" name="inputAssignTo">
 						<?php
 						foreach ($agentsClass->getAgents() AS $agent) {
-							$agent = $agent->getValues();
-
-							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
+							$output  = "<option value=\"" . $agent['agent_id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
 
 							echo $output;
 						}
