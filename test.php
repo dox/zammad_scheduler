@@ -44,16 +44,18 @@ $ticket_articles = $ticketObject->getTicketArticles();
 		<label for="exampleFormControlTextarea1" class="form-label">Your Update</label>
 		<textarea class="form-control" id="ticketBody" name="ticketBody" rows="3"></textarea>
 	</div>
-	
 	<div class="mb-3">
 		<label for="owner_id" class="form-label">Owner</label>
 		<select class="form-select" id="owner_id" name="owner_id">
-			<option></option>
 			<?php
-			foreach ($agentsClass->getAgents() AS $agent) {
+			foreach ($agentsClass->getAgents() AS $agent) {				
 				$output  = "<option value=\"" . $agent['agent_id'] . "\"";
-				if ($ticket['owner_id'] == $agent['agent_id']) {
+				if ($ticket['owner_id'] == "1" && $agent['agent_id'] == $_SESSION['user_id']) {
 					$output .= " selected";
+				} else {
+					if ($ticket['owner_id'] == $agent['agent_id']) {
+						$output .= " selected";
+					}
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
 
