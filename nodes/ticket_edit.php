@@ -153,7 +153,7 @@ if (!empty($_POST)) {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-				<p>Are you sure you want to delete this ticket from the Zendesk Scheduler?  This will not delete any existing tickets on Zendesk.</p>
+				<p>Are you sure you want to delete this ticket from the Task Scheduler?  This will not delete any existing tickets on Zammad.</p>
 				<p class="text-danger"><strong>WARNING!</strong> This action cannot be undone!</p>
       </div>
       <div class="modal-footer">

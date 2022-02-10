@@ -31,7 +31,7 @@
       <div class="card-body">
         <h1 class="card-title pricing-card-title">Agents</h1>
         <ul class="list-unstyled mt-3 mb-4">
-          <li>Locate each Agent's ID from Zendesk</li>
+          <li>Locate each Agent's ID from Zammad</li>
           <li>Setup the details here</li>
         </ul>
 				<a href="index.php?n=agents" role="button" class="btn btn-lg btn-block btn-outline-primary">Agents</a>
@@ -54,32 +54,4 @@
     </div>
     </div>
   </div>
-</div>
-
-
-<?php
-$agentsClass = new agents();
-?>
-
-<div class="container">
-  <?php
-  printArray($agentsClass->groups());
-
-
-
-
-/*
-  foreach ($agentsClass->getAgents() AS $agent) {
-    $agent = $agent->getValues();
-
-    $currentTickets = $agentsClass->ticketsOwnedBy($agent['id']);
-
-    $currentTicketsORIGINAL = $agent['preferences']['tickets_open'];
-
-    if (count($currentTickets) > 0) {
-      echo $agent['firstname'] . " " . $agent['lastname'] . ": Current Tickets = " . count($currentTickets) . "<br />";
-    }
-
-  }*/
-  ?>
 </div>

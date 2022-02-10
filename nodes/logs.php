@@ -17,13 +17,13 @@ $logsClass->purgeLogs();
 
 		<code>
 			<ul class="list-unstyled">
-				<li># Run Zendesk daily tasks every week day morning:</li>
+				<li># Run Zammad daily tasks every week day morning:</li>
 				<li>0 0 * * MON-FRI cd <?php echo($_SERVER['DOCUMENT_ROOT']); ?>/; php -q cron/daily.php</li>
-				<li># Run Zendesk weekly tasks every Monday morning:</li>
+				<li># Run Zammad weekly tasks every Monday morning:</li>
 				<li>0 0 * * MON cd <?php echo($_SERVER['DOCUMENT_ROOT']); ?>/; php -q cron/weekly.php</li>
-				<li># Run Zendesk monthly tasks every 1st of the month:</li>
+				<li># Run Zammad monthly tasks every 1st of the month:</li>
 				<li>0 0 1 * * cd <?php echo($_SERVER['DOCUMENT_ROOT']); ?>/; php -q cron/monthly.php</li>
-				<li># Run Zendesk yearly tasks (check every morning):</li>
+				<li># Run Zammad yearly tasks (check every morning):</li>
 				<li>0 0 * * * cd <?php echo($_SERVER['DOCUMENT_ROOT']); ?>/; php -q cron/yearly.php</li>
 			</ul>
 		</code>

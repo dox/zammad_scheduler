@@ -1,5 +1,4 @@
 <?php
-use Zendesk\API\HttpClient as ZendeskAPI;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
@@ -8,8 +7,6 @@ $agentsClass = new agents();
 $ticketID = $_POST['ticketID'];
 
 $tickets = $client->resource( ResourceType::TICKET )->search("id:" . $ticketID);
-$test = $agentsClass->getAgentsByGroup();
-printArray($test);
 ?>
 
 <div class="container">

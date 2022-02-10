@@ -1,5 +1,4 @@
 <?php
-use Zendesk\API\HttpClient as ZendeskAPI;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
