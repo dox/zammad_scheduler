@@ -30,9 +30,11 @@ $ticket_articles = $ticketObject->getTicketArticles();
 	foreach ($ticket_articles AS $ticket_article) {
 		$article_content = $ticket_article->getValues();
 		if ($article_content['sender'] != "System" ) {
-			//printArray($article_content);
+			
+			$niceOutput = str_replace("src=\"/api/v1/ticket_attachment/", "src=\"https://help.seh.ox.ac.uk/api/v1/ticket_attachment/", $article_content['body']);
+			
 			$output  = "";
-			$output .= $article_content['body'];
+			$output .= $niceOutput;
 			$output .= "<hr />";
 			
 			echo $output;
