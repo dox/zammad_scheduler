@@ -152,12 +152,12 @@ if (isset($_POST['inputSubject'])) {
 				<div class="mb-3">
 					<label for="inputCC" class="form-label">Ticket CC</label>
 					<input type="text" class="form-control" id="inputCC" name="inputCC" aria-describedby="inputCCHelp">
-					<div id="inputCCHelp" class="form-text">Comma-seperated list of email addresses to CC into this ticket.</div>
+					<div id="inputCCHelp" class="form-text">Comma-separated list of email addresses to CC into this ticket.</div>
 				</div>
 				<div class="mb-3">
 					<label for="inputTags" class="form-label">Ticket Tags</label>
 					<input type="text" class="form-control" id="inputTags" name="inputTags" aria-describedby="inputTagsHelp">
-					<div id="inputTagsHelp" class="form-text">Comma-seperated list of tags to include into this ticket.</div>
+					<div id="inputTagsHelp" class="form-text">Comma-separated list of tags to include into this ticket.</div>
 				</div>
 				<div class="mb-3">
 					<label for="inputFrequency" class="form-label">Ticket Frequency</label>
