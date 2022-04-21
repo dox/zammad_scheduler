@@ -173,13 +173,5 @@ function runJob() {
 	}
 }
 
-function toggleFrequency2() {
-	d = document.getElementById("inputFrequency").value;
 
-	if (d == 'Yearly'){
-		document.getElementById("inputFrequency2Div").removeAttribute("hidden");
-	} else {
-		document.getElementById("inputFrequency2Div").setAttribute("hidden", true);
-	}
-}
 </script>
