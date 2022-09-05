@@ -46,6 +46,28 @@ class agents {
 	
 		return $agent;
 	}
+	
+	public function create($array = null) {
+		global $database;
+	
+		foreach ($array AS $updateItem => $value) {
+			$value = str_replace("'", "\'", $value);
+			$sqlUpdate[] = $updateItem ." = '" . $value . "' ";
+		}
+	
+		$sql  = "INSERT INTO agents";
+		$sql .= " SET " . implode(", ", $sqlUpdate);
+	
+		$create = $database->query($sql);
+	
+		// log this!
+		$logRecord = new logs();
+		$logRecord->description = "Agent created: " . $array['id'];
+		$logRecord->type = "admin";
+		$logRecord->log_record();
+	
+		return $create;
+	}
 
 	public function displayAgents() {
 		$groups = $this->groups();
