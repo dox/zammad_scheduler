@@ -3,7 +3,8 @@ require_once('../inc/autoload.php');
 
 $tickets = new tickets();
 
-foreach($tickets->getTickets('Daily') AS $ticket) {
+
+foreach($tickets->getTickets('Yearly') AS $ticket) {
 	// fetch the days this ticket is supposed to run
 	$freqArray = explode(",", strtoupper($ticket['frequency2']));
 	
