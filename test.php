@@ -43,8 +43,15 @@ $ticket_articles = $ticketObject->getTicketArticles();
 	?>
 	
 	<div class="mb-3">
-		<label for="exampleFormControlTextarea1" class="form-label">Your Update</label>
-		<textarea class="form-control" id="ticketBody" name="ticketBody" rows="3"></textarea>
+		<?php
+		if ($ticket['owner_id'] == "1") {
+			$output  = "<strong>Please assign the ticket before you update it</strong>";
+		} else {
+			$output  = "<label for=\"exampleFormControlTextarea1\" class=\"form-label\">Your Update</label>";
+			$output .= "<textarea class=\"form-control\" id=\"ticketBody\" name=\"ticketBody\" rows=\"3\"></textarea>";
+		}
+		echo $output;
+		?>
 	</div>
 	<div class="mb-3">
 		<label for="owner_id" class="form-label">Owner</label>
