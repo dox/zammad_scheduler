@@ -17,7 +17,7 @@ class agents {
 		global $database;
 		
 		$sql  = "SELECT * FROM agents";
-		$sql .= " ORDER BY lastname DESC";
+		$sql .= " ORDER BY lastname ASC";
 		
 		$agents = $database->query($sql)->fetchAll();
 	
