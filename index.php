@@ -14,12 +14,6 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		// Successfully authenticated user.
 		$_SESSION['logon'] = true;
 		$_SESSION['username'] = strtoupper($_POST['inputUsername']);
-
-		if (in_array(strtolower($_SESSION['username']), $arrayOfAdmins)) {
-			$_SESSION['admin'] = true;
-		} else {
-			$_SESSION['admin'] = false;
-		}
 		
 		$users = $client->resource( ZammadAPIClient\ResourceType::USER )->search("login:" . $_SESSION['username']);
 		$user = $users[0]->getValues();
