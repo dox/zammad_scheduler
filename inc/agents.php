@@ -4,16 +4,6 @@ $email_address = "andrew.breakspear@seh.ox.ac.uk";
 class agents {
 
 	public function getAgents() {
-		/*global $client;
-
-		$agents = $client->resource(ZammadAPIClient\ResourceType::USER )->search("role_ids:2 AND active:true");
-
-		if ( !is_array($agents) ) {
-			exitOnError($agents);
-		}
-
-		return $agents;
-		*/
 		global $database;
 		
 		$sql  = "SELECT * FROM agents";
@@ -22,6 +12,23 @@ class agents {
 		$agents = $database->query($sql)->fetchAll();
 	
 		return $agents;
+	}
+	
+	public function getZammadAgents() {
+		global $client;
+		
+		$agents = $client->resource(ZammadAPIClient\ResourceType::USER)->search("role_ids:2 AND active:true");
+			
+		$agentsArray = array();
+		foreach ($agents AS $agentObject) {
+			if (!is_array($agentObject)) {
+				$agentObject = $agentObject->getValues();
+				
+				$agentsArray[$agentObject['id']] = $agentObject;
+			}
+		}
+		
+		return $agentsArray;
 	}
 	
 	public function getAgentsByGroup($groupID = null) {
@@ -37,14 +44,17 @@ class agents {
 	}
 
 	public  function getAgent($id = null) {
-		global $database;
+		global $database, $client;
 		
 		$sql  = "SELECT * FROM agents";
 		$sql .= " WHERE agent_id = '" . $id . "' ";
 		
 		$agent = $database->query($sql)->fetchArray();
-	
-		return $agent;
+		
+		$agentObject = $client->resource(ZammadAPIClient\ResourceType::USER)->get($id);
+		$agentArray = $agentObject->getValues();	
+		
+		return $agentArray;
 	}
 	
 	public function create($array = null) {
@@ -68,43 +78,7 @@ class agents {
 	
 		return $create;
 	}
-
-	public function displayAgents() {
-		$groups = $this->groups();
-		
-		$output  = "<table class=\"table table-striped\">";
-		$output .= "<thead>";
-		$output .= "<tr>";
-		$output .= "<th scope=\"col\">Agent ID</th>";
-		$output .= "<th>Name</th>";
-		$output .= "<th>Group</th>";
-		$output .= "<th><span class=\"float-end\">Jobs Logged/Assigned</span></th>";
-		$output .= "</tr>";
-		$output .= "</thead>";
-
-		$output .= "<tbody>";
-
-		foreach ($this->getAgents() AS $agent) {
-			//$agent = $agent->getValues();
-
-			$agentURL = "index.php?n=agent&agentUID=" . $agent['agent_id'];
-			$jobsLogged = tickets::getTicketsByAgent($agent['agent_id']);
-			$jobsAssigned = tickets::getTicketsByCustomer($agent['agent_id']);
-
-			$output .= "<tr>";
-			$output .= "<td>" . $agent['agent_id'] . "</td>";
-			$output .= "<td><a href=\"" . $agentURL . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</a></td>";
-			$output .= "<td>" . $groups[$agent['group_id']] . "</td>";
-			$output .= "<td><span class=\"float-end\"><span class=\"badge bg-primary\">" . count($jobsLogged) . "</span> / <span class=\"badge bg-success\">" . count($jobsAssigned) . "<span></span></td>";
-			$output .= "</tr>";
-		}
-
-		$output .= "</tbody>";
-		$output .= "</table>";
-
-		return $output;
-	}
-
+	
 	public function ticketsInvolvedWith($agentID = null) {
 		global $database;
 
@@ -134,13 +108,18 @@ class agents {
 
 		$groupsObject = $client->resource(ZammadAPIClient\ResourceType::GROUP)->all();
 			
-			$groupArray = array();
+		$groupArray = array();
 		foreach ($groupsObject AS $groupObject) {
 			if (!is_array($groupObject)) {
 				$groupObject = $groupObject->getValues();
 			
 				$groupArray[$groupObject['id']] = $groupObject['name'];
 			}
+		}
+		
+		// remove 'Users' from the group list
+		if (($key = array_search("Users", $groupArray)) !== false) {
+			unset($groupArray[$key]);
 		}
 		
 		$groupArray = array_unique($groupArray);

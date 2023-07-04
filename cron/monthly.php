@@ -18,7 +18,8 @@ foreach($tickets->getTickets('Monthly') AS $ticket) {
 	];
 	
 	if ($ticket['status'] == "Enabled") {
-		$tickets->ticketCreateInZammad($ticket_data);
+		printArray($ticket_data);
+		//$tickets->ticketCreateInZammad($ticket_data);
 	}
 }
 ?>

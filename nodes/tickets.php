@@ -34,21 +34,37 @@ if (isset($_POST['inputSubject'])) {
 
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<?php
+		$i = 0;
 		foreach($agentsClass->groups() AS $groupID => $groupName) {
-				$output  = "<li class=\"nav-item\" role=\"presentation\">";
-				$output .= "<button class=\"nav-link\" id=\"tab-" . $groupID . "\" data-bs-toggle=\"tab\" data-bs-target=\"#content-" . $groupID . "\" type=\"button\" role=\"tab\" aria-controls=\"" . $groupName . "\" aria-selected=\"false\">" . $groupName . "</button>";
-				$output .= "</li>";
-
-				echo $output;
+			if ($i == 0) {
+				$active = " active";
+			} else {
+				$active = "";
+			}
+			
+			$output  = "<li class=\"nav-item\" role=\"presentation\">";
+			$output .= "<button class=\"nav-link" . $active . "\" id=\"tab-" . $groupID . "\" data-bs-toggle=\"tab\" data-bs-target=\"#content-" . $groupID . "\" type=\"button\" role=\"tab\" aria-controls=\"" . $groupName . "\" aria-selected=\"false\">" . $groupName . "</button>";
+			$output .= "</li>";
+			
+			echo $output;
+			
+			$i++;
 		}
 		?>
 	</ul>
 
 	<div class="tab-content" id="myTabContent">
 		<?php
+		
+		$i = 0;
 		foreach($agentsClass->groups() AS $groupID => $groupName) {
-
-			$output  = "<div class=\"tab-pane fade\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
+			if ($i == 0) {
+				$active = " show active";
+			} else {
+				$active = "";
+			}
+			
+			$output  = "<div class=\"tab-pane fade" . $active . "\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
 
 			$output .= "<h1 class=\"mt-3\">Daily</h1>";
 			$output .= "<p>These tasks will appear on Zendesk at 00:00 every day (Monday - Friday).</p>";
@@ -81,6 +97,8 @@ if (isset($_POST['inputSubject'])) {
 			$output .= "</div>";
 
 			echo $output;
+			
+			$i++;
 		}
 		?>
 	</div>
@@ -129,8 +147,8 @@ if (isset($_POST['inputSubject'])) {
 					<label for="inputLoggedBy" class="form-label">Ticket Logged By</label>
 					<select class="form-select" id="inputLoggedBy" name="inputLoggedBy">
 						<?php
-						foreach ($agentsClass->getAgents() AS $agent) {
-							$output  = "<option value=\"" . $agent['agent_id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
+						foreach ($agentsClass->getZammadAgents() AS $agent) {
+							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
 						
 							echo $output;
 						}
@@ -141,8 +159,8 @@ if (isset($_POST['inputSubject'])) {
 					<label for="inputAssignTo" class="form-label">Auto-assign To Agent</label>
 					<select class="form-select" id="inputAssignTo" name="inputAssignTo">
 						<?php
-						foreach ($agentsClass->getAgents() AS $agent) {
-							$output  = "<option value=\"" . $agent['agent_id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
+						foreach ($agentsClass->getZammadAgents() AS $agent) {
+							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
 
 							echo $output;
 						}

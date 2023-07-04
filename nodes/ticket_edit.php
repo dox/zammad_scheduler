@@ -77,9 +77,9 @@ if (!empty($_POST)) {
 		<label for="inputLoggedBy" class="form-label">Zammad Customer</label>
 		<select class="form-select" id="inputLoggedBy" name="inputLoggedBy">
 			<?php
-			foreach ($agentsClass->getAgents() AS $agent) {
-				$output  = "<option value=\"" . $agent['agent_id'] . "\"";
-				if ($ticket['zammad_customer'] == $agent['agent_id']) {
+			foreach ($agentsClass->getZammadAgents() AS $agent) {
+				$output  = "<option value=\"" . $agent['id'] . "\"";
+				if ($ticket['zammad_customer'] == $agent['id']) {
 					$output .= " selected";
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
@@ -93,9 +93,9 @@ if (!empty($_POST)) {
 		<label for="inputAssignTo" class="form-label">Zammad Agent</label>
 		<select class="form-select" id="inputAssignTo" name="inputAssignTo">
 			<?php
-			foreach ($agentsClass->getAgents() AS $agent) {
-				$output  = "<option value=\"" . $agent['agent_id'] . "\"";
-				if ($ticket['zammad_agent'] == $agent['agent_id']) {
+			foreach ($agentsClass->getZammadAgents() AS $agent) {
+				$output  = "<option value=\"" . $agent['id'] . "\"";
+				if ($ticket['zammad_agent'] == $agent['id']) {
 					$output .= " selected";
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
