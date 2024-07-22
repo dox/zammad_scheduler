@@ -6,7 +6,7 @@ define ("db_database", "YOUR-DATABASE-NAME");
 define ("db_username", "YOUR-MYSQL-USERNAME");
 define ("db_password", "YOUR-PASSWORD");
 
-define ("zammad_debug", false);
+define ("zammad_debug", true);
 define ("zammad_url", "https://your-zammad-domain");
 define ("zammad_token", "zammad-token-here");
 

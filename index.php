@@ -1,5 +1,5 @@
 <?php
-include_once("./inc/autoload.php");
+include_once("inc/autoload.php");
 
 if (isset($_GET['logout'])) {
 	$_SESSION = array();
@@ -16,6 +16,7 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$_SESSION['username'] = strtoupper($_POST['inputUsername']);
 		
 		$users = $client->resource( ZammadAPIClient\ResourceType::USER )->search("login:" . $_SESSION['username']);
+		
 		$user = $users[0]->getValues();
 		$_SESSION['user_id'] = $user['id'];
 		$_SESSION['group_ids'] = $user['group_ids'];
@@ -46,18 +47,6 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$logRecord->log_record();
 	}
 }
-
-if ($_SESSION['logon'] != true) {
-	if (isset($_COOKIE['username'])) {
-		$_SESSION['logon'] = $_COOKIE['logon'];
-		$_SESSION['username'] = $_COOKIE['username'];
-		$_SESSION['admin'] = $_COOKIE['admin'];
-		$_SESSION['user_id'] = $_COOKIE['user_id'];
-	} else {
-		header("Location: logon.php");
-		exit;
-	}
-}
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-100">
@@ -69,25 +58,30 @@ if ($_SESSION['logon'] != true) {
 	<title>Task Scheduler</title>
 	
 	<!-- Bootstrap core CSS/JS -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 	<script src="js/app.js"></script>
 </head>
 
 <body class="bg-light">
 	<?php include_once("views/navbar.php");
-
-	$node = "nodes/index.php";
-	if (isset($_GET['n'])) {
-		$node = "nodes/" . $_GET['n'] . ".php";
-
-		if (!file_exists($node)) {
-			$node = "nodes/404.php";
+	
+	if ($_SESSION['logon'] == true) {
+		if (isset($_GET['n'])) {
+			$node = "nodes/" . $_GET['n'] . ".php";
+		
+			if (!file_exists($node)) {
+				$node = "nodes/404.php";
+			}
+		} else {
+			$node = "nodes/index.php";
 		}
+	} else {
+		$node = "nodes/logon.php";
 	}
-
+	
 	include_once($node);
-
+	
 	include_once("views/footer.php");
 	?>
 </body>

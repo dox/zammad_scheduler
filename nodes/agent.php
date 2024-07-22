@@ -29,7 +29,7 @@ $ticketsClass = new tickets();
 			<h4>Jobs assigned to/logged by:</h4>
 			<?php
 			foreach(tickets::getTicketsByAgentOrCustomer($agent['id']) AS $ticket) {
-					echo $ticketsClass->ticketDisplay($ticket['uid']);
+					echo $ticketsClass->ticketDisplay($ticket->uid);
 			}
 			?>
 		</div>

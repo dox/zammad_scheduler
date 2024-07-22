@@ -1,129 +1,87 @@
 <?php
-class db {
-  protected $connection;
-	protected $query;
-  protected $show_errors = TRUE;
-  protected $query_closed = TRUE;
-	public $query_count = 0;
 
-	public function __construct($dbhost = 'localhost', $dbuser = '', $dbpass = '', $dbname = '', $charset = 'utf8') {
-		$this->connection = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
-		if ($this->connection->connect_error) {
-			$this->error('Failed to connect to MySQL - ' . $this->connection->connect_error);
+class PgSql {
+	private $db;       //The db handle
+	public  $num_rows; //Number of rows
+	public  $last_id;  //Last insert id
+	public  $aff_rows; //Affected rows
+
+	public function __construct() {
+		$this->db = pg_connect("host=" . db_host . " dbname=" . db_database . " user=" . db_username . " password=" . db_password);
+		
+		if (!$this->db) exit("error");
+	}
+
+	public function close()
+	{
+		pg_close($this->db);
+	}
+
+	// For SELECT
+	// Returns one row as object
+	public function getRow($sql)
+	{
+		$result = pg_query($this->db, $sql);
+		$row = pg_fetch_object($result);
+		if (pg_last_error()) exit(pg_last_error());
+		return $row;
+	}
+
+	// For SELECT
+	// Returns an array of row objects
+	// Gets number of rows
+	public function getRows($sql)
+	{
+		$result = pg_query($this->db, $sql);
+		if (pg_last_error()) exit(pg_last_error());
+		$this->num_rows = pg_num_rows($result);
+		$rows = array();
+		while ($item = pg_fetch_object($result)) {
+			$rows[] = $item;
 		}
-		$this->connection->set_charset($charset);
+		return $rows;
 	}
 
-	public function query($query) {
-		if (!$this->query_closed) {
-			$this->query->close();
-		}
-		if ($this->query = $this->connection->prepare($query)) {
-			if (func_num_args() > 1) {
-				$x = func_get_args();
-				$args = array_slice($x, 1);
-				$types = '';
-				$args_ref = array();
-				foreach ($args as $k => &$arg) {
-					if (is_array($args[$k])) {
-						foreach ($args[$k] as $j => &$a) {
-							$types .= $this->_gettype($args[$k][$j]);
-							$args_ref[] = &$a;
-						}
-					} else {
-						$types .= $this->_gettype($args[$k]);
-						$args_ref[] = &$arg;
-					}
-				}
-				array_unshift($args_ref, $types);
-				call_user_func_array(array($this->query, 'bind_param'), $args_ref);
-			}
-			$this->query->execute();
-			   if ($this->query->errno) {
-				$this->error('Unable to process MySQL query (check your params) - ' . $this->query->error);
-			   }
-			$this->query_closed = FALSE;
-			$this->query_count++;
-		} else {
-			$this->error('Unable to prepare MySQL statement (check your syntax) - ' . $this->connection->error);
-		}
-		return $this;
+	// For SELECT
+	// Returns one single column value as a string
+	public function getCol($sql)
+	{
+		$result = pg_query($this->db, $sql);
+		$col = pg_fetch_result($result, 0);
+		if (pg_last_error()) exit(pg_last_error());
+		return $col;
 	}
 
-
-	public function fetchAll($callback = null) {
-		$params = array();
-		$row = array();
-		$meta = $this->query->result_metadata();
-		while ($field = $meta->fetch_field()) {
-			$params[] = &$row[$field->name];
-		}
-		call_user_func_array(array($this->query, 'bind_result'), $params);
-		$result = array();
-		while ($this->query->fetch()) {
-			$r = array();
-			foreach ($row as $key => $val) {
-				$r[$key] = $val;
-			}
-			if ($callback != null && is_callable($callback)) {
-				$value = call_user_func($callback, $r);
-				if ($value == 'break') break;
-			} else {
-				$result[] = $r;
-			}
-		}
-		$this->query->close();
-		$this->query_closed = TRUE;
-		return $result;
+	// For SELECT
+	// Returns array of all values in one column
+	public function getColValues($sql)
+	{
+		$result = pg_query($this->db, $sql);
+		$arr = pg_fetch_all_columns($result);
+		if (pg_last_error()) exit(pg_last_error());
+		return $arr;
 	}
 
-	public function fetchArray() {
-		$params = array();
-		$row = array();
-		$meta = $this->query->result_metadata();
-		while ($field = $meta->fetch_field()) {
-			$params[] = &$row[$field->name];
-		}
-		call_user_func_array(array($this->query, 'bind_result'), $params);
-		$result = array();
-		while ($this->query->fetch()) {
-			foreach ($row as $key => $val) {
-				$result[$key] = $val;
-			}
-		}
-		$this->query->close();
-		$this->query_closed = TRUE;
-		return $result;
+	// For INSERT
+	// Returns last insert $id
+	public function insert($sql, $id='id')
+	{
+		$sql = rtrim($sql, ';');
+		$sql .= ' RETURNING '.$id;
+		$result = pg_query($this->db, $sql);
+		if (pg_last_error()) exit(pg_last_error());
+		$this->last_id = pg_fetch_result($result, 0);
+		return $this->last_id;
 	}
 
-	public function close() {
-		return $this->connection->close();
-	}
-
-	public function numRows() {
-		$this->query->store_result();
-		return $this->query->num_rows;
-	}
-
-	public function affectedRows() {
-		return $this->query->affected_rows;
-	}
-
-	public function lastInsertID() {
-		return $this->connection->insert_id;
-	}
-
-	public function error($error) {
-		if ($this->show_errors) {
-			exit($error);
-		}
-	}
-
-	private function _gettype($var) {
-		if (is_string($var)) return 's';
-		if (is_float($var)) return 'd';
-		if (is_int($var)) return 'i';
-		return 'b';
+	// For UPDATE, DELETE and CREATE TABLE
+	// Returns number of affected rows
+	public function exec($sql)
+	{
+		$result = pg_query($this->db, $sql);
+		if (pg_last_error()) exit(pg_last_error());
+		$this->aff_rows = pg_affected_rows($result);
+		return $this->aff_rows;
 	}
 
 }

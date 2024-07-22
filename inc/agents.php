@@ -1,23 +1,14 @@
 <?php
 $email_address = "andrew.breakspear@seh.ox.ac.uk";
 
-class agents {
+use ZammadAPIClient\Client;
+use ZammadAPIClient\ResourceType;
 
-	public function getAgents() {
-		global $database;
-		
-		$sql  = "SELECT * FROM agents";
-		$sql .= " ORDER BY lastname ASC";
-		
-		$agents = $database->query($sql)->fetchAll();
-	
-		return $agents;
-	}
-	
+class agents {
 	public function getZammadAgents() {
 		global $client;
 		
-		$agents = $client->resource(ZammadAPIClient\ResourceType::USER)->search("role_ids:2 AND active:true");
+		$agents = $client->resource( ResourceType::USER )->search("role_ids:2 AND active:true");
 			
 		$agentsArray = array();
 		foreach ($agents AS $agentObject) {
@@ -49,7 +40,7 @@ class agents {
 		$sql  = "SELECT * FROM agents";
 		$sql .= " WHERE agent_id = '" . $id . "' ";
 		
-		$agent = $database->query($sql)->fetchArray();
+		$agent = $database->getRows($sql);
 		
 		$agentObject = $client->resource(ZammadAPIClient\ResourceType::USER)->get($id);
 		$agentArray = $agentObject->getValues();	
@@ -86,7 +77,7 @@ class agents {
 		$sql .= "WHERE zammad_customer = '" . $agentID . "' ";
 		$sql .= "OR zammad_agent = '" . $agentID . "'";
 
-		$tickets = $database->query($sql)->fetchAll();
+		$tickets = $database->getRows($sql);
 
 		return $tickets;
 

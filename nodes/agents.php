@@ -1,8 +1,5 @@
 <?php
 $agentsClass = new agents();
-
-
-
 ?>
 
 <div class="container">
@@ -31,7 +28,7 @@ $agentsClass = new agents();
 		$jobsAssigned = tickets::getTicketsByCustomer($agent['id']);
 		
 		$output .= "<tr>";
-		$output .= "<td>" . $id . "</td>";
+		$output .= "<td>" . $agent['id'] . "</td>";
 		$output .= "<td><a href=\"" . $agentURL . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</a></td>";
 		$output .= "<td>" . implode(", ", array_keys($agent['groups'])) . "</td>";
 		$output .= "<td><span class=\"float-end\"><span class=\"badge bg-primary\">" . count($jobsLogged) . "</span> / <span class=\"badge bg-success\">" . count($jobsAssigned) . "<span></span></td>";

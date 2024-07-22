@@ -5,7 +5,7 @@ $ticket = $tickets->getTicket($_GET['job']);
 $agentsClass = new agents();
 
 if (!empty($_POST)) {
-	$ticket_update['uid'] = $ticket['uid'];
+	$ticket_update['uid'] = $ticket->uid;
 	$ticket_update['subject'] = $_POST['inputSubject'];
 	$ticket_update['body'] = $_POST['inputBody'];
 	$ticket_update['zammad_priority'] = $_POST['inputPriority'];
@@ -30,9 +30,9 @@ if (!empty($_POST)) {
 
 <div class="container">
 	<?php
-	$title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Ticket ID: " . $ticket['uid'];
-	$subtitle = $ticket['subject'];
-	$icons[] = array("class" => "btn-warning", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#run-now\"/></svg> Run Now", "value" => "onclick=\"zammadTicketCreate(this.id);\" id=\"" . $ticket['uid'] . "\"");
+	$title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Ticket ID: " . $ticket->uid;
+	$subtitle = $ticket->subject;
+	$icons[] = array("class" => "btn-warning", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#run-now\"/></svg> Run Now", "value" => "onclick=\"zammadTicketCreate(this.id);\" id=\"" . $ticket->uid . "\"");
 	$icons[] = array("class" => "btn-danger", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#delete\"/></svg> Delete Ticket", "value" => "data-bs-toggle=\"modal\" data-bs-target=\"#ticketDeleteModal\"");
 
 	echo makeTitle($title, $subtitle, $icons);
@@ -41,11 +41,11 @@ if (!empty($_POST)) {
 	<form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
 	<div class="mb-3">
 		<label for="inputSubject" class="form-label">Ticket Subject</label>
-		<input type="text" class="form-control" id="inputSubject" name="inputSubject" value="<?php echo $ticket['subject']; ?>">
+		<input type="text" class="form-control" id="inputSubject" name="inputSubject" value="<?php echo $ticket->subject; ?>">
 	</div>
 	<div class="mb-3">
 		<label for="inputBody" class="form-label">Ticket Body</label>
-		<textarea class="form-control" rows="3" id="inputBody" name="inputBody"><?php echo $ticket['body']; ?></textarea>
+		<textarea class="form-control" rows="3" id="inputBody" name="inputBody"><?php echo $ticket->body; ?></textarea>
 	</div>
 	<div class="row g-12">
 		<div class="col-md-4 mb-3">
@@ -54,7 +54,7 @@ if (!empty($_POST)) {
 				<?php
 				foreach ($agentsClass->groups() AS $groupID => $groupName) {
 					$output  = "<option value=\"" . $groupID . "\"";
-					if ($groupID == $ticket['zammad_group']) {
+					if ($groupID == $ticket->zammad_group) {
 						$output .= " selected ";
 					}
 					$output .= ">" . $groupName . "</option>";
@@ -67,9 +67,9 @@ if (!empty($_POST)) {
 		<div class="col-md-4 mb-3">
 			<label for="inputPriority" class="form-label">Ticket Priority</label>
 			<select class="form-select" id="inputPriority" name="inputPriority">
-				<option value="1" <?php if ($ticket['zammad_priority'] == "1") { echo " selected";}?>>1 Low</option>
-				<option value="2" <?php if ($ticket['zammad_priority'] == "2") { echo " selected";}?>>2 Normal</option>
-				<option value="3" <?php if ($ticket['zammad_priority'] == "3") { echo " selected";}?>>3 High</option>
+				<option value="1" <?php if ($ticket->zammad_priority == "1") { echo " selected";}?>>1 Low</option>
+				<option value="2" <?php if ($ticket->zammad_priority == "2") { echo " selected";}?>>2 Normal</option>
+				<option value="3" <?php if ($ticket->zammad_priority == "3") { echo " selected";}?>>3 High</option>
 			</select>
 		</div>
 	</div>
@@ -79,7 +79,7 @@ if (!empty($_POST)) {
 			<?php
 			foreach ($agentsClass->getZammadAgents() AS $agent) {
 				$output  = "<option value=\"" . $agent['id'] . "\"";
-				if ($ticket['zammad_customer'] == $agent['id']) {
+				if ($ticket->zammad_customer == $agent['id']) {
 					$output .= " selected";
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
@@ -95,7 +95,7 @@ if (!empty($_POST)) {
 			<?php
 			foreach ($agentsClass->getZammadAgents() AS $agent) {
 				$output  = "<option value=\"" . $agent['id'] . "\"";
-				if ($ticket['zammad_agent'] == $agent['id']) {
+				if ($ticket->zammad_agent == $agent['id']) {
 					$output .= " selected";
 				}
 				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
@@ -107,33 +107,33 @@ if (!empty($_POST)) {
 	</div>
 	<div class="mb-3">
 		<label for="inputCC" class="form-label">Ticket CC</label>
-		<input type="text" class="form-control" id="inputCC" name="inputCC" aria-describedby="inputCCHelp" value="<?php echo $ticket['cc'] ?>">
+		<input type="text" class="form-control" id="inputCC" name="inputCC" aria-describedby="inputCCHelp" value="<?php echo $ticket->cc ?>">
 		<div id="inputCCHelp" class="form-text">Comma-seperated list of email addresses to CC into this ticket.</div>
 	</div>
 	<div class="mb-3">
 		<label for="inputTags" class="form-label">Ticket Tags</label>
-		<input type="text" class="form-control" id="inputTags" name="inputTags" aria-describedby="inputTagsHelp" value="<?php echo $ticket['tags']; ?>">
+		<input type="text" class="form-control" id="inputTags" name="inputTags" aria-describedby="inputTagsHelp" value="<?php echo $ticket->tags; ?>">
 		<div id="inputTagsHelp" class="form-text">Comma-seperated list of tags to include into this ticket.</div>
 	</div>
 	<div class="mb-3">
 		<label for="inputFrequency" class="form-label">Ticket Frequency</label>
 		<select class="form-select" id="inputFrequency" name="inputFrequency" onchange="toggleFrequency2()">
-			<option value="Daily" <?php if ($ticket['frequency'] == "Daily") { echo " selected";}?>>Daily</option>
-			<option value="Weekly" <?php if ($ticket['frequency'] == "Weekly") { echo " selected";}?>>Weekly</option>
-			<option value="Monthly" <?php if ($ticket['frequency'] == "Monthly") { echo " selected";}?>>Monthly</option>
-			<option value="Yearly" <?php if ($ticket['frequency'] == "Yearly") { echo " selected";}?>>Yearly</option>
+			<option value="Daily" <?php if ($ticket->frequency == "Daily") { echo " selected";}?>>Daily</option>
+			<option value="Weekly" <?php if ($ticket->frequency == "Weekly") { echo " selected";}?>>Weekly</option>
+			<option value="Monthly" <?php if ($ticket->frequency == "Monthly") { echo " selected";}?>>Monthly</option>
+			<option value="Yearly" <?php if ($ticket->frequency == "Yearly") { echo " selected";}?>>Yearly</option>
 		</select>
 	</div>
-	<div class="mb-3" id="inputFrequency2Div" <?php if ($ticket['frequency'] <> 'Yearly') { echo 'hidden'; } ?>>
+	<div class="mb-3" id="inputFrequency2Div" <?php if ($ticket->frequency <> 'Yearly') { echo 'hidden'; } ?>>
 		<label for="inputFrequency2" class="form-label">Yearly Frequency</label>
-		<input type="text" class="form-control" id="inputFrequency2" name="inputFrequency2" aria-describedby="inputFrequency2Help" value="<?php echo strtoupper($ticket['frequency2']); ?>">
+		<input type="text" class="form-control" id="inputFrequency2" name="inputFrequency2" aria-describedby="inputFrequency2Help" value="<?php echo strtoupper($ticket->frequency2); ?>">
 		<div id="inputFrequency2Help" class="form-text">The day of the year you want this task to run, written in the format '<?php echo strtoupper(date('M-d'));?>' (with leading zeros).<br />Specify multiple dates by using a comma to separate them (no spaces!) like: '<?php echo strtoupper(date('M-d')) ."," . strtoupper(date('M-d',strtotime(' +1 day')));?>'.</div>
 	</div>
 	<div class="mb-3">
 		<label for="inputStatus" class="form-label">Ticket Status</label>
 		<select class="form-select" id="inputStatus" name="inputStatus">
-			<option value="Enabled" <?php if ($ticket['status'] == "Enabled") { echo " selected";}?>>Enabled</option>
-			<option value="Disabled" <?php if ($ticket['status'] == "Disabled") { echo " selected";}?>>Disabled</option>
+			<option value="Enabled" <?php if ($ticket->status == "Enabled") { echo " selected";}?>>Enabled</option>
+			<option value="Disabled" <?php if ($ticket->status == "Disabled") { echo " selected";}?>>Disabled</option>
 		</select>
 	</div>
 	<div class="d-grid gap-2">
@@ -146,7 +146,7 @@ if (!empty($_POST)) {
 <!-- Modal -->
 <div class="modal fade" id="ticketDeleteModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form action="index.php?n=tickets&ticketDelete=<?php echo $ticket['uid']; ?>" method="post">
+    <form action="index.php?n=tickets&ticketDelete=<?php echo $ticket->uid; ?>" method="post">
 			<div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="staticBackdropLabel">Delete Ticket</h5>
@@ -169,7 +169,7 @@ if (!empty($_POST)) {
 <script>
 function runJob() {
 	if (window.confirm("Are you sure you want to run this job now?")) {
-			location.href = 'index.php?n=tickets&jobRun=<?php echo $ticket['uid']; ?>';
+			location.href = 'index.php?n=tickets&jobRun=<?php echo $ticket->uid; ?>';
 	}
 }
 

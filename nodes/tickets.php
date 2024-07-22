@@ -68,30 +68,30 @@ if (isset($_POST['inputSubject'])) {
 
 			$output .= "<h1 class=\"mt-3\">Daily</h1>";
 			$output .= "<p>These tasks will appear on Zendesk at 00:00 every day (Monday - Friday).</p>";
-
+			
 			foreach($tickets->getTicketsByGroup($groupID, 'Daily') AS $ticket) {
-				$output .= $tickets->ticketDisplay($ticket['uid']);
+				$output .= $tickets->ticketDisplay($ticket->uid);
 			}
 
 			$output .= "<h1 class=\"mt-3\">Weekly</h1>";
 			$output .= "<p>These tasks will appear on Zendesk at 00:00 every Monday morning.</p>";
 
 			foreach($tickets->getTicketsByGroup($groupID, 'Weekly') AS $ticket) {
-				$output .= $tickets->ticketDisplay($ticket['uid']);
+				$output .= $tickets->ticketDisplay($ticket->uid);
 			}
 
 			$output .= "<h1 class=\"mt-3\">Monthly</h1>";
 			$output .= "<p>These tasks will appear on Zendesk at 00:00 on the 1st of every month.</p>";
 
 			foreach($tickets->getTicketsByGroup($groupID, 'Monthly') AS $ticket) {
-				$output .= $tickets->ticketDisplay($ticket['uid']);
+				$output .= $tickets->ticketDisplay($ticket->uid);
 			}
 
 			$output .= "<h1 class=\"mt-3\">Yearly</h1>";
 			$output .= "<p>These tasks will appear on Zendesk at 00:00 once every year on the date(s) specified.</p>";
 
 			foreach($tickets->getTicketsByGroup($groupID, 'Yearly') AS $ticket) {
-				$output .= $tickets->ticketDisplay($ticket['uid']);
+				$output .= $tickets->ticketDisplay($ticket->uid);
 			}
 
 			$output .= "</div>";

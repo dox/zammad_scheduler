@@ -1,4 +1,7 @@
 <?php
+use ZammadAPIClient\Client;
+use ZammadAPIClient\ResourceType;
+
 class tickets {
 	protected static $table_name = "tickets";
 
@@ -8,7 +11,7 @@ class tickets {
 		$sql  = "SELECT * FROM " . self::$table_name . " ";
 		$sql .= "WHERE uid = '" . $uid . "';";
 
-		$ticket = $database->query($sql)->fetchArray();
+		$ticket = $database->getRow($sql);
 
 		return $ticket;
 	}
@@ -17,25 +20,25 @@ class tickets {
 		$ticket = $this->getTicket($uid);
 
 		$agentsClass = new agents();
-		$agent = $agentsClass->getAgent($ticket['zammad_agent']);
+		$agent = $agentsClass->getAgent($ticket->zammad_agent);
 
-		if ($ticket['status'] == "Enabled") {
+		if ($ticket->status == "Enabled") {
 			$class = "";
-			$subjectTitle = $ticket['subject'];
+			$subjectTitle = $ticket->subject;
 		} else {
 			$class = "list-group-item-dark";
-			$subjectTitle = $ticket['subject'] . " [DISABLED]";
+			$subjectTitle = $ticket->subject . " [DISABLED]";
 		}
 
-		$output  = "<a href=\"index.php?n=ticket_edit&job=" . $ticket['uid'] . "\" class=\"list-group-item list-group-item-action " . $class . "\">";
+		$output  = "<a href=\"index.php?n=ticket_edit&job=" . $ticket->uid . "\" class=\"list-group-item list-group-item-action " . $class . "\">";
 		$output .= "<div class=\"d-flex w-100 justify-content-between\">";
 		$output .= "<h5 class=\"mb-1\">" . $subjectTitle . "</h5>";
 		$output .= "</div>";
-		$output .= "<p class=\"mb-1\">" . $ticket['body'] . "</p>";
-		$output .= "<span class=\"badge bg-primary rounded-pill float-end\">" . $ticket['type'] . "</span>" . "<small>Assign To: " . $agent['firstname'] . " " . $agent['lastname'] . "</small>";
+		$output .= "<p class=\"mb-1\">" . $ticket->body . "</p>";
+		$output .= "<span class=\"badge bg-primary rounded-pill float-end\">" . $ticket->type . "</span>" . "<small>Assign To: " . $agent->firstname . " " . $agent->lastname . "</small>";
 
-		if ($ticket['frequency'] == "Yearly") {
-			$output .= " on <small>" . strtoupper($ticket['frequency2']) . "</small>";
+		if ($ticket->frequency == "Yearly") {
+			$output .= " on <small>" . strtoupper($ticket->frequency2) . "</small>";
 		}
 		$output .= "</a>";
 
@@ -51,7 +54,7 @@ class tickets {
 			$sql .= " WHERE frequency = '" . $filter . "'";
 		}
 
-		$tickets = $database->query($sql)->fetchAll();
+		$tickets = $database->getRows($sql);
 
 		return $tickets;
 	}
@@ -65,7 +68,7 @@ class tickets {
 			$sql .= " AND frequency = '" . $filter . "'";
 		}
 	
-		$tickets = $database->query($sql)->fetchAll();
+		$tickets = $database->getRows($sql);
 	
 		return $tickets;
 	}
@@ -76,7 +79,7 @@ class tickets {
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_agent = '" . $ownerID . "'";
 	
-		$tickets = $database->query($sql)->fetchAll();
+		$tickets = $database->getRows($sql);
 	
 		return $tickets;
 	}
@@ -87,7 +90,7 @@ class tickets {
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_customer = '" . $ownerID . "'";
 	
-		$tickets = $database->query($sql)->fetchAll();
+		$tickets = $database->getRows($sql);
 	
 		return $tickets;
 	}
@@ -99,7 +102,7 @@ class tickets {
 		$sql .= " WHERE zammad_customer = '" . $ownerID . "'";
 		$sql .= " OR zammad_agent = '" . $ownerID . "'";
 	
-		$tickets = $database->query($sql)->fetchAll();
+		$tickets = $database->getRows($sql);
 	
 		return $tickets;
 	}
@@ -143,7 +146,7 @@ class tickets {
 			],
 		];
 
-		$ticket = $client->resource(ZammadAPIClient\ResourceType::TICKET );
+		$ticket = $client->resource( ResourceType::TICKET );
 		$ticket->setValues($ticket_data);
 		$ticket->save();
 		exitOnError($ticket);
@@ -176,10 +179,9 @@ class tickets {
 
 		$sql .= " SET " . implode(", ", $sqlUpdate);
 		$sql .= " WHERE uid = '" . $array['uid'] . "' ";
-		$sql .= " LIMIT 1";
 
 		// check if the database entry was successful (by attempting it)
-		if ($database->query($sql)) {
+		if ($database->exec($sql)) {
 			$logRecord = new logs();
 			$logRecord->description = "New " . $this->frequency . " task created: '" . $this->subject . "'";
 			$logRecord->type = "admin";
@@ -201,7 +203,7 @@ class tickets {
 		$sql .= "WHERE uid = '" . $ticketUID . "' ";
 		$sql .= "LIMIT 1";
 
-		$delete = $database->query($sql);
+		$delete = $database->exec($sql);
 
 		// log this!
 		$logRecord = new logs();
@@ -221,7 +223,7 @@ class tickets {
 		$sql  = "INSERT INTO " . self::$table_name;
 		$sql .= " SET " . implode(", ", $sqlUpdate);
 
-		$create = $database->query($sql);
+		$create = $database->exec($sql);
 
 		// log this!
 		$logRecord = new logs();
