@@ -1,6 +1,7 @@
 <?php
 $tickets = new tickets();
 $ticket = $tickets->getTicket($_GET['job']);
+//printArray($ticket);
 
 $agentsClass = new agents();
 

@@ -34,8 +34,10 @@ if (isset($_POST['inputSubject'])) {
 
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<?php
+		$groups = $agentsClass->groups();
+		
 		$i = 0;
-		foreach($agentsClass->groups() AS $groupID => $groupName) {
+		foreach($groups AS $groupID => $groupName) {
 			if ($i == 0) {
 				$active = " active";
 			} else {
@@ -57,7 +59,7 @@ if (isset($_POST['inputSubject'])) {
 		<?php
 		
 		$i = 0;
-		foreach($agentsClass->groups() AS $groupID => $groupName) {
+		foreach($groups AS $groupID => $groupName) {
 			if ($i == 0) {
 				$active = " show active";
 			} else {

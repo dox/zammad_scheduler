@@ -21,7 +21,6 @@ $agentsClass = new agents();
 	$output .= "</thead>";
 	
 	$output .= "<tbody>";
-	
 	foreach ($agentsClass->getZammadAgents() AS $agent) {
 		$agentURL = "index.php?n=agent&agentUID=" . $agent['id'];
 		$jobsLogged = tickets::getTicketsByAgent($agent['id']);

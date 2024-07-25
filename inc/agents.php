@@ -8,18 +8,34 @@ class agents {
 	public function getZammadAgents() {
 		global $client;
 		
-		$agents = $client->resource( ResourceType::USER )->search("role_ids:2 AND active:true");
+		if (!isset($_SESSION['zammad_agents'])) {
+			$zammad_agents = $client->resource( ResourceType::USER )->search("role_ids:2 AND active:true");
 			
-		$agentsArray = array();
-		foreach ($agents AS $agentObject) {
-			if (!is_array($agentObject)) {
-				$agentObject = $agentObject->getValues();
-				
-				$agentsArray[$agentObject['id']] = $agentObject;
+			$agentsArray = array();
+			foreach ($zammad_agents AS $agentObject) {
+				if (!is_array($agentObject)) {
+					$agentObject = $agentObject->getValues();
+					
+					$agentsArray[$agentObject['id']] = $agentObject;
+				}
 			}
+			
+			$_SESSION['zammad_agents'] = $agentsArray;
 		}
 		
-		return $agentsArray;
+		return $_SESSION['zammad_agents'];
+	}
+	
+	public function getZammadAgent($id = null) {
+		global $client;
+		
+		if (!isset($_SESSION['zammad_agents'][$id])) {
+			$zammad_agent = $client->resource( ResourceType::USER )->search("id:" . $id);
+			
+			$_SESSION['zammad_agents'][$id] = $zammad_agent;
+		}
+		
+		return $_SESSION['zammad_agents'][$id];
 	}
 	
 	public function getAgentsByGroup($groupID = null) {
@@ -32,20 +48,6 @@ class agents {
 		$agents = $database->query($sql)->fetchAll();
 	
 		return $agents;
-	}
-
-	public  function getAgent($id = null) {
-		global $database, $client;
-		
-		$sql  = "SELECT * FROM agents";
-		$sql .= " WHERE agent_id = '" . $id . "' ";
-		
-		$agent = $database->getRows($sql);
-		
-		$agentObject = $client->resource(ZammadAPIClient\ResourceType::USER)->get($id);
-		$agentArray = $agentObject->getValues();	
-		
-		return $agentArray;
 	}
 	
 	public function create($array = null) {
@@ -96,26 +98,30 @@ class agents {
 
 	public function groups() {
 		global $client;
-
-		$groupsObject = $client->resource(ZammadAPIClient\ResourceType::GROUP)->all();
-			
-		$groupArray = array();
-		foreach ($groupsObject AS $groupObject) {
-			if (!is_array($groupObject)) {
-				$groupObject = $groupObject->getValues();
-			
-				$groupArray[$groupObject['id']] = $groupObject['name'];
+		
+		if (!isset($_SESSION['zammad_groups'])) {
+			$groupsObject = $client->resource(ZammadAPIClient\ResourceType::GROUP)->all();
+				
+			$groupArray = array();
+			foreach ($groupsObject AS $groupObject) {
+				if (!is_array($groupObject)) {
+					$groupObject = $groupObject->getValues();
+				
+					$groupArray[$groupObject['id']] = $groupObject['name'];
+				}
 			}
+			
+			// remove 'Users' from the group list
+			if (($key = array_search("Users", $groupArray)) !== false) {
+				unset($groupArray[$key]);
+			}
+			
+			$groupArray = array_unique($groupArray);
+			
+			$_SESSION['zammad_groups'] = $groupArray;
 		}
 		
-		// remove 'Users' from the group list
-		if (($key = array_search("Users", $groupArray)) !== false) {
-			unset($groupArray[$key]);
-		}
-		
-		$groupArray = array_unique($groupArray);
-
-		return $groupArray;
+		return $_SESSION['zammad_groups'];
 	}
 
 

@@ -18,10 +18,10 @@ class tickets {
 
 	public function ticketDisplay($uid = null) {
 		$ticket = $this->getTicket($uid);
-
+		
 		$agentsClass = new agents();
-		$agent = $agentsClass->getAgent($ticket->zammad_agent);
-
+		$agent = $agentsClass->getZammadAgent($ticket->zammad_agent);
+		
 		if ($ticket->status == "Enabled") {
 			$class = "";
 			$subjectTitle = $ticket->subject;
@@ -35,7 +35,7 @@ class tickets {
 		$output .= "<h5 class=\"mb-1\">" . $subjectTitle . "</h5>";
 		$output .= "</div>";
 		$output .= "<p class=\"mb-1\">" . $ticket->body . "</p>";
-		$output .= "<span class=\"badge bg-primary rounded-pill float-end\">" . $ticket->type . "</span>" . "<small>Assign To: " . $agent->firstname . " " . $agent->lastname . "</small>";
+		$output .= "<span class=\"badge bg-primary rounded-pill float-end\">" . $ticket->type . "</span>" . "<small>Assign To: " . $agent['firstname'] . " " . $agent['lastname'] . "</small>";
 
 		if ($ticket->frequency == "Yearly") {
 			$output .= " on <small>" . strtoupper($ticket->frequency2) . "</small>";
