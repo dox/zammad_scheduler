@@ -1,5 +1,7 @@
 <div class="container">
 	<?php
+    $agents = new agents();
+    $agents->getZammadAgents();
 	$title = "Task Scheduler";
 	$subtitle = "A simple web-based utility to create and manage reoccurring ticket creation in Zammad.";
 	$icons[] = array("class" => "btn-primary", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#zendesk\"/></svg> View Helpdesk", "value" => "onclick=\"location.href='" . zammad_url . "'\"");

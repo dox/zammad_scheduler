@@ -15,7 +15,48 @@ class tickets {
 
 		return $ticket;
 	}
-
+	
+	public function showTicketsTable($tickets = null) {
+		//printArray($tickets);
+		$output  = "<table class=\"table\">";
+		$output .= "<thead>";
+		$output .= "<tr>";
+		$output .= "<th scope=\"col\">Frequency</th>";
+		$output .= "<th scope=\"col\">Subject</th>";
+		$output .= "<th scope=\"col\">Assign To</th>";
+		$output .= "<th scope=\"col\"></th>";
+		$output .= "</tr>";
+		$output .= "</thead>";
+		$output .= "<tbody>";
+		
+		foreach ($tickets AS $ticket) {
+			$output .= $this->showTicketRow($ticket);	
+		}
+		
+		$output .= "</tbody>";
+		$output .= "</table>";
+		
+		return $output;
+	}
+	
+	private function showTicketRow($ticket = null) {
+		$agentsClass = new agents();
+		$agent = $agentsClass->getZammadAgent($ticket->zammad_agent);
+		
+		$class = "";
+		if ($ticket->status == "Disabled") {
+			$class = "table-secondary";
+		}
+		$output  = "<tr class=\"" . $class . "\">";
+		$output .= "<th scope=\"row\">" . $ticket->frequency ."</th>";
+		$output .= "<td>" . $ticket->subject . "</td>";
+		$output .= "<td>" . $agent['firstname'] . "</td>";
+		$output .= "<td><a href=\"index.php?n=ticket_edit&job=" . $ticket->uid . "\">Edit</a></td>";
+		$output .= "</tr>";
+		
+		return $output;
+	}
+	
 	public function ticketDisplay($uid = null) {
 		$ticket = $this->getTicket($uid);
 		

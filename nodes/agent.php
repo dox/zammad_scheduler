@@ -1,6 +1,6 @@
 <?php
 $agentsClass = new agents();
-$agent = $agentsClass->getAgent($_GET['agentUID']);
+$agent = $agentsClass->getZammadAgent($_GET['agentUID']);
 
 $ticketsClass = new tickets();
 
@@ -17,6 +17,7 @@ $ticketsClass = new tickets();
 
 	<div class="row">
 		<div class="col-lg-6 mb-3">
+			<img src="<?php echo "http://help.seh.ox.ac.uk/api/v1/users/image/" . $agent['image']; ?>" class="img-thumbnail" alt="...">
 			<p>First Name: <?php echo $agent['firstname']; ?></p>
 			<p>Last Name: <?php echo $agent['lastname']; ?></p>
 			<p>Login: <?php echo $agent['login']; ?></p>
@@ -28,9 +29,7 @@ $ticketsClass = new tickets();
 		<div class="col-lg-6">
 			<h4>Jobs assigned to/logged by:</h4>
 			<?php
-			foreach(tickets::getTicketsByAgentOrCustomer($agent['id']) AS $ticket) {
-					echo $ticketsClass->ticketDisplay($ticket->uid);
-			}
+			echo $ticketsClass->showTicketsTable($ticketsClass->getTicketsByAgentOrCustomer($agent['id']));
 			?>
 		</div>
 	</div>
