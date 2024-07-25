@@ -6,7 +6,7 @@ $agentsClass = new agents();
 
 $ticketID = $_POST['ticketID'];
 
-$tickets = $client->resource( ResourceType::TICKET )->search("id:" . $ticketID);
+$tickets = $client->resource( ResourceType::TICKET )->search("number:" . $ticketID);
 ?>
 
 <div class="container">
@@ -21,7 +21,7 @@ $tickets = $client->resource( ResourceType::TICKET )->search("id:" . $ticketID);
 		<div class="mb-3">
 			<label for="exampleInputEmail1" class="form-label">Ticket ID</label>
 			<input type="number" class="form-control" id="ticketID" name="ticketID" value="<?php echo $ticketID; ?>" aria-describedby="emailHelp">
-			<div id="emailHelp" class="form-text">This is the database ID - not the ticket number!  Click on the ticket URL in Zammad to find the ID</div>
+			
 		<button type="submit" class="btn btn-primary">Submit</button>
 	</div>
 		  
@@ -33,20 +33,18 @@ $tickets = $client->resource( ResourceType::TICKET )->search("id:" . $ticketID);
 		if (!is_array($ticket)) {
 			$ticket = $ticket->getValues();
 			
+			echo "<h2>Ticket: " . $ticket['number'] . "</h2>";
 			printArray($ticket);
 			
-			$customer = $agentsClass->getAgent($ticket['customer_id']);
+			$customer = $agentsClass->getZammadAgent($ticket['customer_id']);
 			
-			$output .= "<div class=\"card mb-3\" id=\"ticketID-" . $ticket['id'] . "\" data-bs-toggle=\"modal\"  data-bs-target=\"#menuModal\" onclick=\"displayMenu(this.id)\">";
-			$output .= "<div class=\"card-body\">";
-			$output .= "<h5 class=\"card-title\">" . $ticket['title'] . "</h5>";
-			$output .= "<h6 class=\"card-subtitle mb-2 text-muted\">" . $customer['firstname'] . " " . $customer['lastname'] . " on " . dateDisplay($ticket['created_at']) . "</h6>";
-			//$output .= " This is: " . $customer['firstname'] . " " . $customer['lastname'];
-			//$output .= "<p class=\"card-text\">With supporting text below as a natural lead-in to additional content.</p>";
-			$output .= "</div>"; //card-body
-			$output .= "</div>"; //card
+			echo "<h2>Customer: " . $customer['firstname'] . " " . $customer['lastname'] . "</h2>";
+			printArray($customer);
 			
-			//printArray($ticket);
+			$agent = $agentsClass->getZammadAgent($ticket['owner_id']);
+			
+			echo "<h2>Agent: " . $agent['firstname'] . " " . $agent['lastname'] . "</h2>";
+			printArray($agent);
 		}
 	}
 	 
