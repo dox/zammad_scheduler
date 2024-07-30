@@ -41,6 +41,7 @@ class tickets {
 	
 	private function showTicketRow($ticket = null) {
 		$agentsClass = new agents();
+		
 		$agent = $agentsClass->getZammadAgent($ticket->zammad_agent);
 		
 		$class = "";

@@ -26,7 +26,7 @@ if (isset($_POST['inputSubject'])) {
 <div class="container">
 	<?php
 	$title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Tickets";
-	$subtitle = "Daily, weekly, monthly and yearly tickets that are auto-scheduled to appear on Zendesk.";
+	$subtitle = "Daily, weekly, monthly and yearly tickets that are auto-scheduled to appear on Zammad.";
 	$icons[] = array("class" => "btn-primary", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Add Ticket", "value" => "data-bs-toggle=\"modal\" data-bs-target=\"#ticketAddModal\"");
 
 	echo makeTitle($title, $subtitle, $icons);
@@ -68,8 +68,7 @@ if (isset($_POST['inputSubject'])) {
 			
 			$output  = "<div class=\"tab-pane fade" . $active . "\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
 
-			$output .= "<h1 class=\"mt-3\">Daily</h1>";
-			$output .= "<p>These tasks will appear on Zendesk at 00:00 every day (Monday - Friday).</p>";
+			$output .= "<br />";
 			
 			$output .= $tickets->showTicketsTable($tickets->getTicketsByGroup($groupID));
 			

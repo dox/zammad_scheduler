@@ -27,9 +27,8 @@ class agents {
 	}
 	
 	public function getZammadAgent($id = null) {
-		global $client;
-		
 		if (!isset($_SESSION['zammad_agents'][$id])) {
+			global $client;
 			$zammad_agent = $client->resource( ResourceType::USER )->search("id:" . $id);
 			
 			$_SESSION['zammad_agents'][$id] = $zammad_agent;
