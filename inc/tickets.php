@@ -243,7 +243,6 @@ class tickets {
 
 		$sql  = "DELETE FROM " . self::$table_name . " ";
 		$sql .= "WHERE uid = '" . $ticketUID . "' ";
-		$sql .= "LIMIT 1";
 
 		$delete = $database->exec($sql);
 
@@ -259,12 +258,13 @@ class tickets {
 
 		foreach ($array AS $updateItem => $value) {
 			$value = str_replace("'", "\'", $value);
-			$sqlUpdate[] = $updateItem ." = '" . $value . "' ";
+			$sqlUpdate[$updateItem] = "'" . $value . "'";
 		}
 
 		$sql  = "INSERT INTO " . self::$table_name;
-		$sql .= " SET " . implode(", ", $sqlUpdate);
-
+		$sql .= " (" . implode(", ", array_keys($sqlUpdate)) . ") ";
+		$sql .= "VALUES (" . implode(", ", $sqlUpdate) . ")";
+		
 		$create = $database->exec($sql);
 
 		// log this!
