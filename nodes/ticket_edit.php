@@ -41,7 +41,8 @@ if (!empty($_POST)) {
 	echo makeTitle($title, $subtitle, $icons);
 	
 	if (isset($previousZammadTicket['id']) && $previousZammadTicket['state'] != 'closed') {
-		$url = "https://help.seh.ox.ac.uk/#ticket/zoom/" . $previousZammadTicket['id'];
+		$url = zammad_url . "/#ticket/zoom/" . $previousZammadTicket['id'];
+		
 		echo "<div class=\"alert alert-primary\" role=\"alert\">";
 		echo "The previous run of this ticket has not yet been closed<br />";
 		echo "ID: " . $previousZammadTicket['id'] . " created on " . $previousZammadTicket['created_at'] . "<br />";
