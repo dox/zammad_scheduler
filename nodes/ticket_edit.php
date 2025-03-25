@@ -1,6 +1,8 @@
 <?php
 $tickets = new tickets();
 $ticket = $tickets->getTicket($_GET['job']);
+$previousZammadTicket = $tickets->ticketValuesGetFromZammad($ticket->last_id);
+
 //printArray($ticket);
 
 $agentsClass = new agents();
@@ -37,6 +39,16 @@ if (!empty($_POST)) {
 	$icons[] = array("class" => "btn-danger", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#delete\"/></svg> Delete Ticket", "value" => "data-bs-toggle=\"modal\" data-bs-target=\"#ticketDeleteModal\"");
 
 	echo makeTitle($title, $subtitle, $icons);
+	
+	if (isset($previousZammadTicket['id']) && $previousZammadTicket['state'] != 'closed') {
+		$url = "https://help.seh.ox.ac.uk/#ticket/zoom/" . $previousZammadTicket['id'];
+		echo "<div class=\"alert alert-primary\" role=\"alert\">";
+		echo "The previous run of this ticket has not yet been closed<br />";
+		echo "ID: " . $previousZammadTicket['id'] . " created on " . $previousZammadTicket['created_at'] . "<br />";
+		echo "<a href=\"" . $url . "\">" . $url . "</a>";
+		echo "</div>";
+		//printArray($previousZammadTicket);
+	}
 	?>
 
 	<form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">

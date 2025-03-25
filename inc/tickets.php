@@ -158,7 +158,10 @@ class tickets {
 		return $ticketObject;
 	}
 	
-	public function ticketValuesGetFromZammad($ticketID = null) {		
+	public function ticketValuesGetFromZammad($ticketID = null) {	
+		if (is_null($ticketID)) {
+			return false;
+		}	
 		$ticketObject = $this->ticketObjectGetFromZammad($ticketID);
 		$ticketValues = $ticketObject->getValues();
 		
@@ -174,7 +177,7 @@ class tickets {
 	
 	public function ticketCreateInZammad($ticket = null) {
 		global $client;
-
+	
 		$ticket_data = [
 			'group_id'    => $ticket['group_id'],
 			'owner_id'    => $ticket['owner_id'],
@@ -187,19 +190,25 @@ class tickets {
 				'body'    => $ticket['article']['body'],
 			],
 		];
-
-		$ticket = $client->resource( ResourceType::TICKET );
-		$ticket->setValues($ticket_data);
-		$ticket->save();
-		exitOnError($ticket);
-
-		$ticket_id = $ticket->getID(); // same as getValue('id')
-
+	
+		$zammad_ticket = $client->resource( ResourceType::TICKET );
+		$zammad_ticket->setValues($ticket_data);
+		$zammad_ticket->save();
+		exitOnError($zammad_ticket);
+		
+		$zammad_ticket_id = $zammad_ticket->getID(); // same as getValue('id')
+		
+		$ticket_update['uid'] = $ticket['uid'];
+		$ticket_update['last_id'] = $zammad_ticket_id;
+		$this->update($ticket_update);
+	
+		
+	
 		$logRecord = new logs();
-		$logRecord->description = "API submission: " . $ticket_data['title'];
+		$logRecord->description = "API submission: " . $ticket['title'] . " created ticket ID: " . $zammad_ticket_id;
 		$logRecord->type = "cron";
 		$logRecord->log_record();
-
+	
 		return true;
 	}
 
