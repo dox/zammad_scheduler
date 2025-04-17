@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <?php
 $tickets = new tickets();
 $ticket = $tickets->getTicket($_GET['job']);
@@ -141,7 +144,7 @@ if (!empty($_POST)) {
 	<div class="mb-3" id="inputFrequency2Div" <?php if ($ticket->frequency <> 'Yearly') { echo 'hidden'; } ?>>
 		<label for="inputFrequency2" class="form-label">Yearly Frequency</label>
 		<input type="text" class="form-control" id="inputFrequency2" name="inputFrequency2" aria-describedby="inputFrequency2Help" value="<?php echo strtoupper($ticket->frequency2); ?>">
-		<div id="inputFrequency2Help" class="form-text">The day of the year you want this task to run, written in the format '<?php echo strtoupper(date('M-d'));?>' (with leading zeros).<br />Specify multiple dates by using a comma to separate them (no spaces!) like: '<?php echo strtoupper(date('M-d')) ."," . strtoupper(date('M-d',strtotime(' +1 day')));?>'.</div>
+		<div id="inputFrequency2Help" class="form-text">Single and multiple dates allowed</div>
 	</div>
 	<div class="mb-3">
 		<label for="inputStatus" class="form-label">Ticket Status</label>
@@ -187,5 +190,35 @@ function runJob() {
 	}
 }
 
+const input = document.querySelector("#inputFrequency2");
 
+function parseCustomDates(str) {
+  if (!str) return [];
+  return str.split(",").map(dateStr => {
+	const [monthStr, dayStr] = dateStr.trim().split("-");
+	const month = new Date(`${monthStr} 1, 2000`).getMonth(); // Dummy year
+	const day = parseInt(dayStr, 10);
+	const today = new Date();
+	return new Date(today.getFullYear(), month, day);
+  });
+}
+
+flatpickr(input, {
+  mode: "multiple",
+  defaultDate: parseCustomDates(input.value),
+  dateFormat: "M-d", // still required but overridden below
+  formatDate: (date, format, locale) => {
+	const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${month}-${day}`;
+  },
+  onChange: function(selectedDates, dateStr, instance) {
+	// Update the input field manually to show the correct custom format
+	input.value = selectedDates.map(date => {
+	  const month = date.toLocaleString('en-GB', { month: 'short' }).toUpperCase();
+	  const day = String(date.getDate()).padStart(2, '0');
+	  return `${month}-${day}`;
+	}).join(",");
+  }
+});
 </script>
