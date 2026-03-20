@@ -11,7 +11,7 @@ $tickets = $client->resource( ResourceType::TICKET )->search("number:" . $ticket
 
 <div class="container">
 	<?php
-	$title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Ticket Query";
+	$title = "<i class=\"bi bi-stickies\"></i> Ticket Query";
 	$subtitle = "Ticket ID: " . $ticketID;
 		
 	echo makeTitle($title, $subtitle);

@@ -5,7 +5,7 @@ $logsClass->purgeLogs();
 
 <div class="container">
 	<?php
-	$title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#logs\"/></svg> Logs";
+	$title = "<i class=\"bi bi-clock-history\"></i> Logs";
 	$subtitle = "Logs for cron tasks, ticket creation and agent changes.";
 	//$icons[] = array("class" => "btn-primary", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#zendesk\"/></svg> View Zendesk", "value" => "onclick=\"location.href='" . zd_url . "'\"");
 

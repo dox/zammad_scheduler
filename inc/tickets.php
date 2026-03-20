@@ -18,14 +18,12 @@ class tickets {
 	}
 	
 	public function showTicketsTable($tickets = null) {
-		//printArray($tickets);
-		$output  = "<table class=\"table\">";
+		$output  = "<table class=\"table align-middle ticket-table mb-0\">";
 		$output .= "<thead>";
 		$output .= "<tr>";
 		$output .= "<th scope=\"col\">Frequency</th>";
 		$output .= "<th scope=\"col\">Subject</th>";
 		$output .= "<th scope=\"col\">Assign To</th>";
-		$output .= "<th scope=\"col\"></th>";
 		$output .= "</tr>";
 		$output .= "</thead>";
 		$output .= "<tbody>";
@@ -44,16 +42,24 @@ class tickets {
 		$agentsClass = new agents();
 		
 		$agent = $agentsClass->getZammadAgent($ticket->zammad_agent);
+		$agentName = is_array($agent) ? trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? '')) : "";
+		if ($agentName === "") {
+			$agentName = "Agent " . $ticket->zammad_agent;
+		}
 		
 		$class = "";
 		if ($ticket->status == "Disabled") {
 			$class = "table-secondary";
 		}
 		$output  = "<tr class=\"" . $class . "\">";
-		$output .= "<th scope=\"row\">" . $ticket->frequency ."</th>";
-		$output .= "<td>" . $ticket->subject . "</td>";
-		$output .= "<td>" . $agent['firstname'] . "</td>";
-		$output .= "<td><a href=\"index.php?n=ticket_edit&job=" . $ticket->uid . "\">Edit</a></td>";
+		$output .= "<th scope=\"row\"><span class=\"badge rounded-pill text-bg-light border\">" . htmlspecialchars($ticket->frequency, ENT_QUOTES) . "</span></th>";
+		$output .= "<td>";
+		$output .= "<div class=\"fw-semibold\"><a class=\"ticket-row-link\" href=\"index.php?n=ticket_edit&job=" . $ticket->uid . "\">" . htmlspecialchars($ticket->subject, ENT_QUOTES) . "</a></div>";
+		if ($ticket->status == "Disabled") {
+			$output .= "<div class=\"small text-muted\">Disabled</div>";
+		}
+		$output .= "</td>";
+		$output .= "<td>" . htmlspecialchars($agentName, ENT_QUOTES) . "</td>";
 		$output .= "</tr>";
 		
 		return $output;

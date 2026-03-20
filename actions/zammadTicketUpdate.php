@@ -1,10 +1,5 @@
 <?php
 include_once("../inc/autoload.php");
-
-
-
-
-use Zendesk\API\HttpClient as ZendeskAPI;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
@@ -15,7 +10,10 @@ $ticketValues = $ticketExisting->getValues();
 $agentsClass = new agents();
 
 $agentBeingAssigned = $agentsClass->getAgent($_POST['ticketOwner']);
-printArray($agentBeingAssigned);
+if (empty($agentBeingAssigned)) {
+	http_response_code(400);
+	exit("Unknown agent");
+}
 
 if ($_POST['ticketBody'] <> "") {
 	$ticket_data = [
@@ -24,7 +22,7 @@ if ($_POST['ticketBody'] <> "") {
 		'owner_id'	=> $_POST['ticketOwner'],
 		'content_type' => 'text/html',
 		'body' => $_POST['ticketBody'],
-		'internal' => 'false'
+		'internal' => false
 	];
 	
 	$ticketUpdate = $client->resource( ZammadAPIClient\ResourceType::TICKET_ARTICLE );
@@ -47,6 +45,6 @@ exitOnError($ticketExisting);
 
 $logRecord = new logs();
 $logRecord->description = "Ticket " . $ticketValues['id'] . " updated.  Owner: " . $_POST['ticketOwner'] . " - Group: " . $agentBeingAssigned['group_id'];
-$logRecord->type = "ticket";
+$logRecord->type = "info";
 $logRecord->log_record();
 ?>

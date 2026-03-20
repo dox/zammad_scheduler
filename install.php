@@ -10,13 +10,15 @@ if (isset($_POST['install_attempt'])) {
 
   clearstatcache();
 
-  $handle = fopen($filename, "r") or die("Can't open mySQL import file");
-  while (($line = fgets($handle)) !== false) {
-    //echo $line . "<br />";
-    $database->query($line);
+  $sql = file_get_contents($filename);
+  if ($sql === false) {
+      die("Can't open database import file");
   }
 
-  fclose($handle);
+  $statements = array_filter(array_map('trim', explode(";", $sql)));
+  foreach ($statements as $statement) {
+    $database->exec($statement);
+  }
 
   echo "Install complete.  Please visit your site.";
   exit;
@@ -29,7 +31,7 @@ if (isset($_POST['install_attempt'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="author" content="Andrew Breakspear">
-  <title>Zendesk Scheduler: Installer</title>
+  <title>Zammad Scheduler: Installer</title>
 
   <!-- Bootstrap core CSS/JS -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-CuOF+2SnTUfTwSZjCXf01h7uYhfOBuxIhGKPbfEJ3+FqH/s6cIFN9bGr1HmAg4fQ" crossorigin="anonymous">
@@ -40,7 +42,7 @@ if (isset($_POST['install_attempt'])) {
 <body class="bg-light">
 	<div class="container d-flex w-100 h-100 p-3 mx-auto flex-column">
     <div class="px-3 py-3 pt-md-5 pb-md-4 text-center">
-  		<h1 class="display-4">Zendesk Scheduler DB Installer</h1>
+  		<h1 class="display-4">Zammad Scheduler DB Installer</h1>
   		<p class="lead">Create the required tables in your database.</p>
   	</div>
 
@@ -62,10 +64,10 @@ if (isset($_POST['install_attempt'])) {
 
     <!-- CHECK FOR PRE-EXISTING INSTALL -->
     <?php
-  	$sql  = "SHOW tables";
-  	$tables = $database->query($sql);
+  	$sql  = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'";
+  	$tables = $database->getCol($sql);
 
-    if ($tables->num_rows == 0) {
+    if ((int) $tables === 0) {
       $content = "<strong>TABLES</strong> Database has no tables (which is good!).  Ready to install";
       echo makeAlert($content, "alert-success");
     } else {

@@ -4,6 +4,8 @@
 <?php
 $tickets = new tickets();
 $agentsClass = new agents();
+$groups = $agentsClass->groups();
+$allTickets = $tickets->getTickets();
 
 if (isset($_GET['ticketDelete'])) {
 	$tickets->delete($_GET['ticketDelete']);
@@ -24,73 +26,147 @@ if (isset($_POST['inputSubject'])) {
 
 	$tickets->create($ticket_create);
 }
+
+$enabledCount = 0;
+$disabledCount = 0;
+foreach ($allTickets as $scheduledTicket) {
+	if (($scheduledTicket->status ?? '') === 'Disabled') {
+		$disabledCount++;
+	} else {
+		$enabledCount++;
+	}
+}
+
+$summaryCards = array(
+	array(
+		'label' => 'Scheduled Tickets',
+		'value' => count($allTickets),
+		'helper' => 'All jobs currently configured in this scheduler',
+		'class' => 'text-primary',
+	),
+	array(
+		'label' => 'Enabled',
+		'value' => $enabledCount,
+		'helper' => 'Jobs that can currently create tickets',
+		'class' => 'text-success',
+	),
+	array(
+		'label' => 'Disabled',
+		'value' => $disabledCount,
+		'helper' => 'Jobs kept for reference but not currently active',
+		'class' => 'text-secondary',
+	),
+);
 ?>
 
 <div class="container">
 	<?php
-	$title = "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Tickets";
+	$title = "<i class=\"bi bi-stickies\"></i> Tickets";
 	$subtitle = "Daily, weekly, monthly and yearly tickets that are auto-scheduled to appear on Zammad.";
-	$icons[] = array("class" => "btn-primary", "name" => "<svg width=\"1em\" height=\"1em\"><use xlink:href=\"inc/icons.svg#tickets\"/></svg> Add Ticket", "value" => "data-bs-toggle=\"modal\" data-bs-target=\"#ticketAddModal\"");
+	$icons[] = array("class" => "btn-primary", "name" => "<i class=\"bi bi-plus-circle\"></i> Add Ticket", "value" => "data-bs-toggle=\"modal\" data-bs-target=\"#ticketAddModal\"");
 
 	echo makeTitle($title, $subtitle, $icons);
 	?>
 
-	<ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
-		<?php
-		$groups = $agentsClass->groups();
-		
-		$i = 0;
-		foreach($groups AS $groupID => $groupName) {
-			if ($i == 0) {
-				$active = " active";
-			} else {
-				$active = "";
-			}
-			
-			$output  = "<li class=\"nav-item\" role=\"presentation\">";
-			$output .= "<button class=\"nav-link" . $active . "\" id=\"tab-" . $groupID . "\" data-bs-toggle=\"tab\" data-bs-target=\"#content-" . $groupID . "\" type=\"button\" role=\"tab\" aria-controls=\"" . $groupName . "\" aria-selected=\"false\">" . $groupName . "</button>";
-			$output .= "</li>";
-			
-			echo $output;
-			
-			$i++;
-		}
-		?>
-	</ul>
+	<div class="tickets-page-shell">
+		<div class="row g-3 mb-4">
+			<?php foreach ($summaryCards as $card): ?>
+				<div class="col-md-4">
+					<div class="card border-0 shadow-sm h-100">
+						<div class="card-body">
+							<div class="text-muted small text-uppercase mb-2"><?php echo htmlspecialchars($card['label'], ENT_QUOTES); ?></div>
+							<div class="display-6 fw-semibold <?php echo htmlspecialchars($card['class'], ENT_QUOTES); ?>"><?php echo htmlspecialchars((string) $card['value'], ENT_QUOTES); ?></div>
+							<div class="small text-muted"><?php echo htmlspecialchars($card['helper'], ENT_QUOTES); ?></div>
+						</div>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
 
-	<div class="tab-content" id="myTabContent">
-		<?php
-		
-		$i = 0;
-		foreach($groups AS $groupID => $groupName) {
-			if ($i == 0) {
-				$active = " show active";
-			} else {
-				$active = "";
-			}
-			
-			$output  = "<div class=\"tab-pane fade" . $active . "\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
+		<div class="card border-0 shadow-sm">
+			<div class="card-body p-4">
+				<div class="section-heading">
+					<h3 class="h5 mb-1">Scheduled Ticket Library</h3>
+					<p class="text-muted mb-0">Browse tickets by Zammad group and use the live filter to find jobs quickly.</p>
+				</div>
 
-			$output .= "<br />";
-			$output .= "<div class=\"mb-3\">";
-			$output .= "<input type=\"search\" class=\"form-control ticket-search-input\" placeholder=\"Search tickets in " . htmlspecialchars($groupName, ENT_QUOTES) . "\" data-ticket-search-target=\"content-" . $groupID . "\">";
-			$output .= "</div>";
-			
-			$output .= $tickets->showTicketsTable($tickets->getTicketsByGroup($groupID));
-			
+				<ul class="nav nav-pills nav-fill ticket-group-tabs mb-4" id="myTab" role="tablist">
+					<?php
+					$i = 0;
+					foreach($groups AS $groupID => $groupName) {
+						$active = $i === 0 ? " active" : "";
+						$groupTicketCount = count($tickets->getTicketsByGroup($groupID));
+						
+						$output  = "<li class=\"nav-item\" role=\"presentation\">";
+						$output .= "<button class=\"nav-link" . $active . "\" id=\"tab-" . $groupID . "\" data-bs-toggle=\"tab\" data-bs-target=\"#content-" . $groupID . "\" type=\"button\" role=\"tab\" aria-controls=\"" . htmlspecialchars($groupName, ENT_QUOTES) . "\" aria-selected=\"" . ($i === 0 ? "true" : "false") . "\">";
+						$output .= "<span>" . htmlspecialchars($groupName, ENT_QUOTES) . "</span>";
+						$output .= "<span class=\"badge rounded-pill group-count-badge ms-2\">" . $groupTicketCount . "</span>";
+						$output .= "</button>";
+						$output .= "</li>";
+						
+						echo $output;
+						
+						$i++;
+					}
+					?>
+				</ul>
 
-			$output .= "</div>";
+				<div class="tab-content" id="myTabContent">
+					<?php
+					$i = 0;
+					foreach($groups AS $groupID => $groupName) {
+						$active = $i === 0 ? " show active" : "";
+						$groupTickets = $tickets->getTicketsByGroup($groupID);
+						
+						$output  = "<div class=\"tab-pane fade" . $active . "\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
+						$output .= "<div class=\"d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3\">";
+						$output .= "<div>";
+						$output .= "<div class=\"ticket-meta-label\">Group Overview</div>";
+						$output .= "<div class=\"text-muted\">Manage scheduled tickets for " . htmlspecialchars($groupName, ENT_QUOTES) . ".</div>";
+						$output .= "</div>";
+						$output .= "<input type=\"search\" class=\"form-control ticket-search-input\" placeholder=\"Search tickets in " . htmlspecialchars($groupName, ENT_QUOTES) . "\" data-ticket-search-target=\"content-" . $groupID . "\">";
+						$output .= "</div>";
 
-			echo $output;
-			
-			$i++;
-		}
-		?>
+						if (!empty($groupTickets)) {
+							$output .= "<div class=\"table-responsive\">";
+							$output .= $tickets->showTicketsTable($groupTickets);
+							$output .= "</div>";
+							$output .= "<p class=\"text-muted small mb-0 d-none ticket-search-empty\">No tickets match this search.</p>";
+						} else {
+							$output .= "<div class=\"alert alert-light border mb-0\" role=\"alert\">No scheduled tickets have been created for this group yet.</div>";
+						}
+
+						$output .= "</div>";
+
+						echo $output;
+						
+						$i++;
+					}
+					?>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+	function updateEmptyState(pane) {
+		var emptyState = pane.querySelector('.ticket-search-empty');
+		if (!emptyState) {
+			return;
+		}
+
+		var visibleRows = 0;
+		pane.querySelectorAll('tbody tr').forEach(function (row) {
+			if (row.style.display !== 'none') {
+				visibleRows += 1;
+			}
+		});
+
+		emptyState.classList.toggle('d-none', visibleRows !== 0);
+	}
+
 	document.querySelectorAll('.ticket-search-input').forEach(function (input) {
 		input.addEventListener('input', function () {
 			var term = input.value.toLowerCase().trim();
@@ -104,6 +180,8 @@ document.addEventListener('DOMContentLoaded', function () {
 				var text = row.textContent.toLowerCase();
 				row.style.display = text.indexOf(term) === -1 ? 'none' : '';
 			});
+
+			updateEmptyState(pane);
 		});
 	});
 });
@@ -199,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	  </div>
 	  <div class="modal-footer">
 		<button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Close</button>
-				<button type="submit" class="btn btn-primary"><svg width="1em" height="1em"><use xlink:href="inc/icons.svg#tickets"/></svg> Add Ticket</button>
+				<button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Ticket</button>
 	  </div>
 	</div>
 		</form>
@@ -221,22 +299,84 @@ function parseCustomDates(str) {
   });
 }
 
-flatpickr(input, {
-  mode: "multiple",
-  defaultDate: parseCustomDates(input.value),
-  dateFormat: "M-d", // still required but overridden below
-  formatDate: (date, format, locale) => {
-	const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${month}-${day}`;
-  },
-  onChange: function(selectedDates, dateStr, instance) {
-	// Update the input field manually to show the correct custom format
-	input.value = selectedDates.map(date => {
-	  const month = date.toLocaleString('en-GB', { month: 'short' }).toUpperCase();
-	  const day = String(date.getDate()).padStart(2, '0');
-	  return `${month}-${day}`;
-	}).join(",");
-  }
-});
+if (input) {
+	flatpickr(input, {
+	  mode: "multiple",
+	  defaultDate: parseCustomDates(input.value),
+	  dateFormat: "M-d",
+	  formatDate: (date, format, locale) => {
+		const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${month}-${day}`;
+	  },
+	  onChange: function(selectedDates, dateStr, instance) {
+		input.value = selectedDates.map(date => {
+		  const month = date.toLocaleString('en-GB', { month: 'short' }).toUpperCase();
+		  const day = String(date.getDate()).padStart(2, '0');
+		  return `${month}-${day}`;
+		}).join(",");
+	  }
+	});
+}
 </script>
+
+<style>
+.tickets-page-shell .card {
+	border-radius: 1rem;
+	background-color: var(--bs-tertiary-bg);
+	border: 1px solid var(--bs-border-color-translucent) !important;
+	box-shadow: var(--bs-box-shadow-sm) !important;
+}
+
+.section-heading {
+	margin-bottom: 1.25rem;
+}
+
+.ticket-group-tabs .nav-link {
+	border-radius: 999px;
+	font-weight: 600;
+}
+
+.ticket-group-tabs .nav-link.active {
+	box-shadow: inset 0 0 0 1px rgba(13, 110, 253, 0.08);
+}
+
+.ticket-meta-label {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--bs-secondary-color);
+	margin-bottom: 0.25rem;
+}
+
+.ticket-search-input {
+	max-width: 26rem;
+}
+
+.ticket-table thead th {
+	color: var(--bs-secondary-color);
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	border-bottom-width: 1px;
+}
+
+.group-count-badge {
+	background-color: var(--bs-secondary-bg-subtle);
+	color: var(--bs-emphasis-color);
+	border: 1px solid var(--bs-border-color-translucent);
+}
+
+.ticket-row-link {
+	color: inherit;
+	text-decoration: none;
+}
+
+.ticket-row-link:hover,
+.ticket-row-link:focus {
+	color: #0d6efd;
+	text-decoration: underline;
+}
+</style>

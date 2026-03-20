@@ -5,6 +5,10 @@ use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
 class agents {
+	public function getAgents() {
+		return $this->getZammadAgents();
+	}
+
 	public function getZammadAgents() {
 		global $client;
 		
@@ -56,12 +60,13 @@ class agents {
 	
 	public function getAgentsByGroup($groupID = null) {
 		global $database;
+		$groupID = $database->escape($groupID);
 		
 		$sql  = "SELECT * FROM agents";
 		$sql .= " WHERE group_id = '" . $groupID . "' ";
 		$sql .= " ORDER BY lastname DESC";
 		
-		$agents = $database->query($sql)->fetchAll();
+		$agents = $database->getRows($sql);
 	
 		return $agents;
 	}
@@ -70,14 +75,16 @@ class agents {
 		global $database;
 	
 		foreach ($array AS $updateItem => $value) {
-			$value = str_replace("'", "\'", $value);
-			$sqlUpdate[] = $updateItem ." = '" . $value . "' ";
+			$value = $database->escape($value);
+			$sqlColumns[] = $updateItem;
+			$sqlValues[] = "'" . $value . "'";
 		}
 	
 		$sql  = "INSERT INTO agents";
-		$sql .= " SET " . implode(", ", $sqlUpdate);
+		$sql .= " (" . implode(", ", $sqlColumns) . ")";
+		$sql .= " VALUES (" . implode(", ", $sqlValues) . ")";
 	
-		$create = $database->query($sql);
+		$create = $database->exec($sql);
 	
 		// log this!
 		$logRecord = new logs();
@@ -90,6 +97,7 @@ class agents {
 	
 	public function ticketsInvolvedWith($agentID = null) {
 		global $database;
+		$agentID = $database->escape($agentID);
 
 		$sql  = "SELECT * FROM tickets ";
 		$sql .= "WHERE zammad_customer = '" . $agentID . "' ";
@@ -138,6 +146,14 @@ class agents {
 		}
 		
 		return $_SESSION['zammad_groups'];
+	}
+
+	public function localAgentsTableExists() {
+		global $database;
+
+		$sql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'agents'";
+
+		return ((int) $database->getCol($sql)) > 0;
 	}
 
 
