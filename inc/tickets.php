@@ -7,6 +7,7 @@ class tickets {
 
 	public static function getTicket($uid = null) {
 		global $database;
+		$uid = $database->escape($uid);
 
 		$sql  = "SELECT * FROM " . self::$table_name . " ";
 		$sql .= "WHERE uid = '" . $uid . "';";
@@ -93,6 +94,7 @@ class tickets {
 		$sql  = "SELECT * FROM " . self::$table_name;
 
 		if ($filter != "all") {
+			$filter = $database->escape($filter);
 			$sql .= " WHERE frequency = '" . $filter . "'";
 		}
 
@@ -103,10 +105,12 @@ class tickets {
 
 	public static function getTicketsByGroup($groupID = null, $filter = "all") {
 		global $database;
+		$groupID = $database->escape($groupID);
 	
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_group = '" . $groupID . "'";
 		if ($filter != "all") {
+			$filter = $database->escape($filter);
 			$sql .= " AND frequency = '" . $filter . "'";
 		}
 	
@@ -117,6 +121,7 @@ class tickets {
 	
 	public static function getTicketsByAgent($ownerID = null) {
 		global $database;
+		$ownerID = $database->escape($ownerID);
 	
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_agent = '" . $ownerID . "'";
@@ -128,6 +133,7 @@ class tickets {
 	
 	public static function getTicketsByCustomer($ownerID = null) {
 		global $database;
+		$ownerID = $database->escape($ownerID);
 	
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_customer = '" . $ownerID . "'";
@@ -139,6 +145,7 @@ class tickets {
 	
 	public static function getTicketsByAgentOrCustomer($ownerID = null) {
 		global $database;
+		$ownerID = $database->escape($ownerID);
 	
 		$sql  = "SELECT * FROM " . self::$table_name;
 		$sql .= " WHERE zammad_customer = '" . $ownerID . "'";
@@ -222,24 +229,25 @@ class tickets {
 				if ($value == '') {
 					$sqlUpdate[] = $updateItem ." = NULL ";
 				} else {
-					$value = str_replace("'", "\'", $value);
+					$value = $database->escape($value);
 					$sqlUpdate[] = $updateItem ." = '" . $value . "' ";
 				}
 			}
 		}
 
 		$sql .= " SET " . implode(", ", $sqlUpdate);
-		$sql .= " WHERE uid = '" . $array['uid'] . "' ";
+		$sql .= " WHERE uid = '" . $database->escape($array['uid']) . "' ";
 
 		// check if the database entry was successful (by attempting it)
-		if ($database->exec($sql)) {
+		$update = $database->exec($sql);
+		if ($update) {
 			$logRecord = new logs();
-			$logRecord->description = "New " . $this->frequency . " task created: '" . $this->subject . "'";
+			$logRecord->description = "Task updated: " . $array['uid'];
 			$logRecord->type = "admin";
 			$logRecord->log_record();
 		} else {
 			$logRecord = new logs();
-			$logRecord->description = "Error creating task: " . $this->subject . "'";
+			$logRecord->description = "Error updating task: " . $array['uid'];
 			$logRecord->type = "error";
 			$logRecord->log_record();
 		}
@@ -249,6 +257,7 @@ class tickets {
 
 	  public function delete($ticketUID = null) {
 		global $database;
+		$ticketUID = $database->escape($ticketUID);
 
 		$sql  = "DELETE FROM " . self::$table_name . " ";
 		$sql .= "WHERE uid = '" . $ticketUID . "' ";
@@ -266,7 +275,7 @@ class tickets {
 		global $database;
 
 		foreach ($array AS $updateItem => $value) {
-			$value = str_replace("'", "\'", $value);
+			$value = $database->escape($value);
 			$sqlUpdate[$updateItem] = "'" . $value . "'";
 		}
 

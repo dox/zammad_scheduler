@@ -69,6 +69,9 @@ if (isset($_POST['inputSubject'])) {
 			$output  = "<div class=\"tab-pane fade" . $active . "\" id=\"content-" . $groupID . "\" role=\"tabpanel\" aria-labelledby=\"tab-" . $groupID . "\">";
 
 			$output .= "<br />";
+			$output .= "<div class=\"mb-3\">";
+			$output .= "<input type=\"search\" class=\"form-control ticket-search-input\" placeholder=\"Search tickets in " . htmlspecialchars($groupName, ENT_QUOTES) . "\" data-ticket-search-target=\"content-" . $groupID . "\">";
+			$output .= "</div>";
 			
 			$output .= $tickets->showTicketsTable($tickets->getTicketsByGroup($groupID));
 			
@@ -82,6 +85,26 @@ if (isset($_POST['inputSubject'])) {
 		?>
 	</div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	document.querySelectorAll('.ticket-search-input').forEach(function (input) {
+		input.addEventListener('input', function () {
+			var term = input.value.toLowerCase().trim();
+			var pane = document.getElementById(input.getAttribute('data-ticket-search-target'));
+
+			if (!pane) {
+				return;
+			}
+
+			pane.querySelectorAll('tbody tr').forEach(function (row) {
+				var text = row.textContent.toLowerCase();
+				row.style.display = text.indexOf(term) === -1 ? 'none' : '';
+			});
+		});
+	});
+});
+</script>
 
 
 <!-- Modal -->

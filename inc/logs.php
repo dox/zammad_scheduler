@@ -19,14 +19,8 @@ class logs {
 	}
 	
 	public function displayLogs() {
-		$output  = "<table class=\"table table-striped\">";
-		$output .= "<thead>";
-		$output .= "<tr>";
-		$output .= "<th width=\"200px\">Date</th>";
-		$output .= "<th>Description</th>";
-		$output .= "</tr>";
-		$output .= "</thead>";
-		
+		$output = "";
+
 		$successTypes = array("logon_success");
 		$primaryTypes = array("admin");
 		$warningTypes = array("logon_fail", "defunt_access");
@@ -57,12 +51,10 @@ class logs {
 			
 			$output .= "<tr class=\"" . $alertClass . "\">";
 			$output .= "<td>" . date('Y-m-d H:i:s',strtotime($log->date_added)) . "</td>";
-			$output .= "<td>" . $log->description . "<span class=\"badge rounded-pill float-end " . $typeClass  . "\">" . $this->type . "</span></td>";
+			$output .= "<td>" . $log->description . "<span class=\"badge rounded-pill float-end " . $typeClass  . "\">" . $log->type . "</span></td>";
 			$output .= "</tr>";
 		}
-		$output .= "</tbody>";
-		$output .= "</table>";
-	
+		
 		return $output;
 	}
 	
@@ -85,10 +77,12 @@ class logs {
 	
 	public function log_record() {
 		global $database;
+		$description = $database->escape($this->description);
+		$type = $database->escape($this->type);
 	
 		$sql  = "INSERT INTO " . self::$table_name . " (";
 		$sql .= "description, type";
-		$sql .= ") VALUES ('" . $this->description . "', '" . $this->type . "')";
+		$sql .= ") VALUES ('" . $description . "', '" . $type . "')";
 	
 		// check if the database entry was successful (by attempting it)
 		if ($database->exec($sql)) {

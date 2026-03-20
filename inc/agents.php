@@ -29,12 +29,29 @@ class agents {
 	public function getZammadAgent($id = null) {
 		if (!isset($_SESSION['zammad_agents'][$id])) {
 			global $client;
-			$zammad_agent = $client->resource( ResourceType::USER )->search("id:" . $id);
-			
-			$_SESSION['zammad_agents'][$id] = $zammad_agent;
+			$zammad_agent = $client->resource(ResourceType::USER)->search("id:" . (int) $id);
+
+			if (isset($zammad_agent[0]) && !is_array($zammad_agent[0])) {
+				$_SESSION['zammad_agents'][$id] = $zammad_agent[0]->getValues();
+			} else {
+				$_SESSION['zammad_agents'][$id] = null;
+			}
 		}
 		
 		return $_SESSION['zammad_agents'][$id];
+	}
+
+	public function getAgent($id = null) {
+		$agent = $this->getZammadAgent($id);
+
+		if (is_array($agent) && !isset($agent['group_id']) && isset($agent['groups']) && is_array($agent['groups'])) {
+			$groupIds = array_keys($agent['groups']);
+			if (!empty($groupIds)) {
+				$agent['group_id'] = $groupIds[0];
+			}
+		}
+
+		return $agent;
 	}
 	
 	public function getAgentsByGroup($groupID = null) {

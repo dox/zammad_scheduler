@@ -48,8 +48,10 @@ $currentPage = basename($_SERVER["SCRIPT_FILENAME"], '.php');
 
 <div class="container">
 <?php
-foreach ($messages AS $message) {
-	echo $message;
+if (isset($messages) && is_array($messages)) {
+	foreach ($messages AS $message) {
+		echo $message;
+	}
 }
 ?>
 </div>

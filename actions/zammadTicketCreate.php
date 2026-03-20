@@ -6,6 +6,7 @@ $tickets = new tickets();
 $ticket = $tickets->getTicket($_POST['ticketUID']);
 
 $ticket_data = [
+	'uid'         => $ticket->uid,
 	'group_id'    => $ticket->zammad_group,
 	'owner_id'    => $ticket->zammad_agent,
 	'priority_id' => $ticket->zammad_priority,

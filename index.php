@@ -3,6 +3,10 @@ include_once("inc/autoload.php");
 
 if (isset($_GET['logout'])) {
 	$_SESSION = array();
+	setcookie("logon", "", time() - 3600, "/");
+	setcookie("username", "", time() - 3600, "/");
+	setcookie("admin", "", time() - 3600, "/");
+	setcookie("user_id", "", time() - 3600, "/");
 	unset($_COOKIE['logon']);
 	unset($_COOKIE['username']);
 	unset($_COOKIE['admin']);
@@ -21,7 +25,7 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$_SESSION['user_id'] = $user['id'];
 		$_SESSION['group_ids'] = $user['group_ids'];
 		
-		if ($_POST['remember'] == "true") {
+			if (isset($_POST['remember']) && $_POST['remember'] == "true") {
 			$cookieTime = time() + (86400 * 30); // 86400 = 1 day
 			
 			setcookie("logon", $_SESSION['logon'], $cookieTime, "/");

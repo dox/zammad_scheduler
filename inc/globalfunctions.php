@@ -16,10 +16,12 @@ function makeTitle($title = null, $subtitle = null, $iconsArray = null) {
 	$output .= "</div>";
 	
 	$output .= "<div class=\"pb-3 text-end\">";
-	foreach ($iconsArray AS $icon) {
-		$output .= "<button type=\"button\" class=\"btn btn-sm ms-1 " . $icon['class'] . "\"" . $icon['value'] . ">";
-		$output .= $icon['name'];
-		$output .= "</button>";
+	if (is_array($iconsArray)) {
+		foreach ($iconsArray AS $icon) {
+			$output .= "<button type=\"button\" class=\"btn btn-sm ms-1 " . $icon['class'] . "\"" . $icon['value'] . ">";
+			$output .= $icon['name'];
+			$output .= "</button>";
+		}
 	}
 	$output .= "</div>";
 	
@@ -37,7 +39,7 @@ function dateDisplay($date = null, $showTime = true) {
 	$cleanDate = strtotime($date);
 	
 	if ($showTime == true) {
-		$format = "Y-m-d H:m";
+		$format = "Y-m-d H:i";
 	} else {
 		$format = "Y-m-d";
 	}

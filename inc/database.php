@@ -17,6 +17,15 @@ class PgSql {
 		pg_close($this->db);
 	}
 
+	public function escape($value)
+	{
+		if (is_null($value)) {
+			return '';
+		}
+
+		return pg_escape_string($this->db, (string) $value);
+	}
+
 	// For SELECT
 	// Returns one row as object
 	public function getRow($sql)

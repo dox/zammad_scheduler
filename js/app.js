@@ -1,5 +1,7 @@
-function zammadTicketCreate(this_id) {	
-	event.preventDefault();
+function zammadTicketCreate(this_id, evt) {	
+	if (evt && typeof evt.preventDefault === 'function') {
+		evt.preventDefault();
+	}
 	
 	var ticketUID = this_id;
 	
@@ -31,8 +33,10 @@ function zammadTicketCreate(this_id) {
 	return false;
 }
 
-function zammadTicketUpdate(this_id, state) {	
-	event.preventDefault();
+function zammadTicketUpdate(this_id, state, evt) {	
+	if (evt && typeof evt.preventDefault === 'function') {
+		evt.preventDefault();
+	}
 	
 	var ticketID = this_id;
 	var ticketBody = document.getElementById('ticketBody').value;
