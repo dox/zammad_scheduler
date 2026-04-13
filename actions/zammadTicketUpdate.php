@@ -15,10 +15,16 @@ if (empty($agentBeingAssigned)) {
 	exit("Unknown agent");
 }
 
+$groupId = $agentBeingAssigned['group_id'] ?? $ticketValues['group_id'];
+if (empty($groupId)) {
+	http_response_code(400);
+	exit("Unable to determine agent group");
+}
+
 if ($_POST['ticketBody'] <> "") {
 	$ticket_data = [
 		'ticket_id'		=> $ticketValues['id'],
-		'group_id'		=> $agentBeingAssigned['group_id'],
+		'group_id'		=> $groupId,
 		'owner_id'	=> $_POST['ticketOwner'],
 		'content_type' => 'text/html',
 		'body' => $_POST['ticketBody'],
@@ -34,7 +40,7 @@ if ($_POST['ticketBody'] <> "") {
 
 $ticket_data = [
 	'id'		=> $ticketValues['id'],
-	'group_id'	=> $agentBeingAssigned['group_id'],
+	'group_id'	=> $groupId,
 	'owner_id'	=> $_POST['ticketOwner'],
 	'state' 	=> $_POST['ticketState']
 ];
@@ -44,7 +50,7 @@ $ticketExisting->save();
 exitOnError($ticketExisting);
 
 $logRecord = new logs();
-$logRecord->description = "Ticket " . $ticketValues['id'] . " updated.  Owner: " . $_POST['ticketOwner'] . " - Group: " . $agentBeingAssigned['group_id'];
+$logRecord->description = "Ticket " . $ticketValues['id'] . " updated.  Owner: " . $_POST['ticketOwner'] . " - Group: " . $groupId;
 $logRecord->type = "info";
 $logRecord->log_record();
 ?>

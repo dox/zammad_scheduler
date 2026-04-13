@@ -23,9 +23,9 @@ foreach ($agents as $agent) {
 
 $summaryCards = array(
 	array(
-		'label' => 'Agents',
+		'label' => 'Users',
 		'value' => $totalAgents,
-		'helper' => 'Active Zammad agents available for scheduled tickets',
+		'helper' => 'Active Zammad users available in this directory',
 		'class' => 'text-primary',
 	),
 	array(
@@ -37,7 +37,7 @@ $summaryCards = array(
 	array(
 		'label' => 'In Use',
 		'value' => $scheduledInvolvement,
-		'helper' => 'Agents currently linked to at least one scheduled ticket',
+		'helper' => 'Users currently linked to at least one scheduled ticket',
 		'class' => 'text-secondary',
 	),
 );
@@ -45,8 +45,8 @@ $summaryCards = array(
 
 <div class="container">
 	<?php
-	$title = "<i class=\"bi bi-people\"></i> Agents";
-	$subtitle = "Agents imported from Zammad that can be assigned scheduled tickets.";
+	$title = "<i class=\"bi bi-people\"></i> Active Zammad Users";
+	$subtitle = "Active users imported from Zammad, including people linked to scheduled tickets.";
 
 	echo makeTitle($title, $subtitle, $icons);
 	?>
@@ -70,10 +70,10 @@ $summaryCards = array(
 			<div class="card-body p-4">
 				<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
 					<div>
-						<h3 class="h5 mb-1">Agent Directory</h3>
-						<p class="text-muted mb-0">Browse agents, see where they sit in Zammad, and jump into their scheduled-ticket view.</p>
+						<h3 class="h5 mb-1">User Directory</h3>
+						<p class="text-muted mb-0">Browse active Zammad users, see where they sit in Zammad, and jump into their scheduled-ticket view.</p>
 					</div>
-					<input type="search" class="form-control agent-search-input" placeholder="Search agents by name, group, login or email" aria-label="Search agents">
+					<input type="search" class="form-control agent-search-input" placeholder="Search users by name, group, login or email" aria-label="Search users">
 				</div>
 
 				<?php if (!empty($agents)): ?>
@@ -158,7 +158,7 @@ $summaryCards = array(
 					</div>
 					<p class="text-muted small mb-0 d-none mt-3" id="agentSearchEmpty">No agents match this search.</p>
 				<?php else: ?>
-					<div class="alert alert-light border mb-0" role="alert">No agents were returned from Zammad.</div>
+					<div class="alert alert-light border mb-0" role="alert">No active users were returned from Zammad.</div>
 				<?php endif; ?>
 			</div>
 		</div>

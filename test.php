@@ -62,16 +62,21 @@ $ticket_articles = $ticketObject->getTicketArticles();
 		<label for="owner_id" class="form-label">Owner</label>
 		<select class="form-select" id="owner_id" name="owner_id">
 			<?php
-			foreach ($agentsClass->getAgents() AS $agent) {				
-				$output  = "<option value=\"" . $agent['agent_id'] . "\"";
-				if ($ticket['owner_id'] == "1" && $agent['agent_id'] == $_SESSION['user_id']) {
+			foreach ($agentsClass->getAgents() AS $agent) {
+				$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
+				if ($agentName === "") {
+					$agentName = $agent['login'] ?? ("Agent " . $agent['id']);
+				}
+
+				$output  = "<option value=\"" . $agent['id'] . "\"";
+				if ($ticket['owner_id'] == "1" && $agent['id'] == $_SESSION['user_id']) {
 					$output .= " selected";
 				} else {
-					if ($ticket['owner_id'] == $agent['agent_id']) {
+					if ($ticket['owner_id'] == $agent['id']) {
 						$output .= " selected";
 					}
 				}
-				$output .= ">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
+				$output .= ">" . htmlspecialchars($agentName, ENT_QUOTES) . "</option>";
 
 				echo $output;
 			}

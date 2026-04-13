@@ -2,7 +2,10 @@
 include_once("inc/autoload.php");
 
 if (isset($_GET['logout'])) {
+	unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups']);
 	$_SESSION = array();
+	session_unset();
+	session_destroy();
 	setcookie("logon", "", time() - 3600, "/");
 	setcookie("username", "", time() - 3600, "/");
 	setcookie("admin", "", time() - 3600, "/");
@@ -16,6 +19,7 @@ if (isset($_GET['logout'])) {
 if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 	if ($ldap_connection->auth()->attempt($_POST['inputUsername'] . LDAP_ACCOUNT_SUFFIX, $_POST['inputPassword'], $stayAuthenticated = true)) {
 		// Successfully authenticated user.
+		unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups']);
 		$_SESSION['logon'] = true;
 		$_SESSION['username'] = strtoupper($_POST['inputUsername']);
 		
