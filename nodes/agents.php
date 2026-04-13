@@ -23,9 +23,9 @@ foreach ($agents as $agent) {
 
 $summaryCards = array(
 	array(
-		'label' => 'Users',
+		'label' => 'Agents',
 		'value' => $totalAgents,
-		'helper' => 'Active Zammad users available in this directory',
+		'helper' => 'Active Zammad agents available in this directory',
 		'class' => 'text-primary',
 	),
 	array(
@@ -37,7 +37,7 @@ $summaryCards = array(
 	array(
 		'label' => 'In Use',
 		'value' => $scheduledInvolvement,
-		'helper' => 'Users currently linked to at least one scheduled ticket',
+		'helper' => 'Agents currently linked to at least one scheduled ticket',
 		'class' => 'text-secondary',
 	),
 );
@@ -45,8 +45,8 @@ $summaryCards = array(
 
 <div class="container">
 	<?php
-	$title = "<i class=\"bi bi-people\"></i> Active Zammad Users";
-	$subtitle = "Active users imported from Zammad, including people linked to scheduled tickets.";
+	$title = "<i class=\"bi bi-people\"></i> Active Zammad Agents";
+	$subtitle = "Active agents imported from Zammad, including people linked to scheduled tickets.";
 
 	echo makeTitle($title, $subtitle, $icons);
 	?>
@@ -71,7 +71,7 @@ $summaryCards = array(
 				<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
 					<div>
 						<h3 class="h5 mb-1">User Directory</h3>
-						<p class="text-muted mb-0">Browse active Zammad users, see where they sit in Zammad, and jump into their scheduled-ticket view.</p>
+						<p class="text-muted mb-0">Browse active Zammad agents, see where they sit in Zammad, and jump into their scheduled-ticket view.</p>
 					</div>
 					<input type="search" class="form-control agent-search-input" placeholder="Search users by name, group, login or email" aria-label="Search users">
 				</div>
