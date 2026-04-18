@@ -58,26 +58,20 @@ The app uses these Composer packages:
    - import `mysql_import.sql` into your PostgreSQL database manually
 
 6. Make sure your web server document root points at the app directory.
-7. Update the hardcoded document root path in the cron scripts under `cron/` so it matches your deployment.
-8. Add cron jobs for the scheduler scripts.
+7. Update the hardcoded document root path in `cron/run.php` so it matches your deployment.
+8. Add one cron job for the scheduler.
 
 ## Cron setup
 
-The repository includes separate scripts for each schedule type:
+The repository includes a single scheduler entrypoint:
 
-- `cron/daily.php`
-- `cron/weekly.php`
-- `cron/monthly.php`
-- `cron/yearly.php`
-- `cron/oneoff.php`
+- `cron/run.php`
 
-Run each script on the cadence that matches its name. For example, a daily job might look like:
+Run that script once per day. It will automatically create any tickets due that day across the daily, weekly, monthly, and yearly schedules. For example:
 
 ```bash
-0 2 * * * /usr/bin/php /path/to/zammad_scheduler/cron/daily.php
+0 2 * * * /usr/bin/php /path/to/zammad_scheduler/cron/run.php
 ```
-
-You’ll want to do the same for weekly, monthly, and yearly jobs, using whatever timing makes sense for your environment.
 
 ## Usage
 

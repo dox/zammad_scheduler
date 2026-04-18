@@ -109,6 +109,101 @@ class tickets {
 		return $tickets;
 	}
 
+	public function getDueTicketsForDate($date = null) {
+		if ($date === null) {
+			$date = new DateTimeImmutable('today');
+		} elseif (!$date instanceof DateTimeInterface) {
+			$date = new DateTimeImmutable((string) $date);
+		}
+
+		$allTickets = $this->getTickets();
+		$dueTickets = [];
+
+		foreach ($allTickets as $ticket) {
+			if (($ticket->status ?? '') !== 'Enabled') {
+				continue;
+			}
+
+			if ($this->isTicketDueOnDate($ticket, $date)) {
+				$dueTickets[] = $ticket;
+			}
+		}
+
+		return $dueTickets;
+	}
+
+	public function isTicketDueOnDate($ticket = null, DateTimeInterface $date = null) {
+		if ($ticket === null) {
+			return false;
+		}
+
+		if ($date === null) {
+			$date = new DateTimeImmutable('today');
+		}
+
+		switch ($ticket->frequency ?? '') {
+			case 'Daily':
+				return true;
+
+			case 'Weekly':
+				return $date->format('N') === '1';
+
+			case 'Monthly':
+				return $date->format('j') === '1';
+
+			case 'Yearly':
+				return $this->isYearlyTicketDueOnDate($ticket, $date);
+
+			default:
+				return false;
+		}
+	}
+
+	public function buildTicketPayload($ticket = null) {
+		if ($ticket === null) {
+			return null;
+		}
+
+		return [
+			'uid'         => $ticket->uid,
+			'group_id'    => $ticket->zammad_group,
+			'owner_id'    => $ticket->zammad_agent,
+			'priority_id' => $ticket->zammad_priority,
+			'state_id'    => 1,
+			'title'       => $ticket->subject,
+			'customer_id' => $ticket->zammad_customer,
+			'article'     => [
+				'subject' => $ticket->subject,
+				'body'    => $ticket->body,
+			],
+		];
+	}
+
+	public function runScheduledTickets($date = null) {
+		$dueTickets = $this->getDueTicketsForDate($date);
+
+		foreach ($dueTickets as $ticket) {
+			$this->ticketCreateInZammad($this->buildTicketPayload($ticket));
+		}
+
+		return count($dueTickets);
+	}
+
+	private function isYearlyTicketDueOnDate($ticket = null, DateTimeInterface $date = null) {
+		if ($ticket === null || empty($ticket->frequency2)) {
+			return false;
+		}
+
+		if ($date === null) {
+			$date = new DateTimeImmutable('today');
+		}
+
+		$datesToRun = array_filter(array_map('trim', explode(',', strtoupper((string) $ticket->frequency2))));
+		$todayToken = strtoupper($date->format('M-d'));
+
+		return in_array($todayToken, $datesToRun, true);
+	}
+	
 	public static function getTicketsByGroup($groupID = null, $filter = "all") {
 		global $database;
 		$groupID = $database->escape($groupID);
