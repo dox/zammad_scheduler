@@ -2,10 +2,14 @@
 include_once("inc/autoload.php");
 
 if (isset($_GET['logout'])) {
-	unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups']);
+	unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups'], $_SESSION['zammad_roles'], $_SESSION['zammad_agents_cache_version']);
 	$_SESSION = array();
 	session_unset();
 	session_destroy();
+	if (ini_get('session.use_cookies')) {
+		$sessionParams = session_get_cookie_params();
+		setcookie(session_name(), '', time() - 3600, $sessionParams['path'], $sessionParams['domain'], $sessionParams['secure'], $sessionParams['httponly']);
+	}
 	setcookie("logon", "", time() - 3600, "/");
 	setcookie("username", "", time() - 3600, "/");
 	setcookie("admin", "", time() - 3600, "/");
@@ -14,14 +18,18 @@ if (isset($_GET['logout'])) {
 	unset($_COOKIE['username']);
 	unset($_COOKIE['admin']);
 	unset($_COOKIE['user_id']);
+	header("Location: index.php");
+	exit;
 }
 
 if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 	if ($ldap_connection->auth()->attempt($_POST['inputUsername'] . LDAP_ACCOUNT_SUFFIX, $_POST['inputPassword'], $stayAuthenticated = true)) {
 		// Successfully authenticated user.
-		unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups']);
+		unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups'], $_SESSION['zammad_roles'], $_SESSION['zammad_agents_cache_version']);
+		session_regenerate_id(true);
 		$_SESSION['logon'] = true;
 		$_SESSION['username'] = strtoupper($_POST['inputUsername']);
+		unset($_SESSION['logon_error']);
 		
 		$users = $client->resource( ZammadAPIClient\ResourceType::USER )->search("login:" . $_SESSION['username']);
 		
@@ -42,6 +50,9 @@ if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 		$logRecord->description = $_SESSION['username'] . " logon succesful";
 		$logRecord->type = "logon_success";
 		$logRecord->log_record();
+
+		header("Location: index.php?n=tickets");
+		exit;
 	} else {
 		// Username or password is incorrect.
 		$_SESSION['logon'] = false;

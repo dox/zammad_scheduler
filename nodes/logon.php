@@ -21,7 +21,7 @@
 						}
 						?>
 
-						<form method="post" name="loginSubmit" action="">
+						<form method="post" name="loginSubmit" action="index.php">
 							<div class="mb-3">
 								<label for="inputUsername" class="form-label">Username</label>
 								<input type="text" id="inputUsername" name="inputUsername" class="form-control" placeholder="Username" required autofocus>
