@@ -5,11 +5,15 @@ use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
 class agents {
+	private const AGENT_CACHE_VERSION = 2;
+
 	public function getAgents() {
 		return $this->getZammadAgents();
 	}
 
 	public function getZammadAgents() {
+		$this->invalidateAgentCacheIfNeeded();
+
 		if (!isset($_SESSION['zammad_agents']) || !is_array($_SESSION['zammad_agents'])) {
 			$zammad_agents = $this->fetchAllZammadUsers();
 			$agentsArray = array();
@@ -30,6 +34,8 @@ class agents {
 	}
 	
 	public function getZammadAgent($id = null) {
+		$this->invalidateAgentCacheIfNeeded();
+
 		$id = (int) $id;
 		if ($id <= 0) {
 			return null;
@@ -138,6 +144,17 @@ class agents {
 		return false;
 	}
 
+	private function invalidateAgentCacheIfNeeded() {
+		$cacheVersion = (int) ($_SESSION['zammad_agents_cache_version'] ?? 0);
+
+		if ($cacheVersion === self::AGENT_CACHE_VERSION) {
+			return;
+		}
+
+		unset($_SESSION['zammad_agents'], $_SESSION['zammad_roles']);
+		$_SESSION['zammad_agents_cache_version'] = self::AGENT_CACHE_VERSION;
+	}
+
 	private function normaliseAgent($agentObject = null) {
 		if (is_array($agentObject)) {
 			return $agentObject;
@@ -198,6 +215,29 @@ class agents {
 		return array();
 	}
 
+	private function fetchAllZammadRoles() {
+		if (isset($_SESSION['zammad_roles']) && is_array($_SESSION['zammad_roles'])) {
+			return $_SESSION['zammad_roles'];
+		}
+
+		$roles = $this->fetchAllZammadRolesViaHttp();
+		$rolesById = array();
+
+		foreach ($roles as $roleObject) {
+			$role = $this->normaliseAgent($roleObject);
+
+			if (!is_array($role) || empty($role['id'])) {
+				continue;
+			}
+
+			$rolesById[(int) $role['id']] = $role;
+		}
+
+		$_SESSION['zammad_roles'] = $rolesById;
+
+		return $rolesById;
+	}
+
 	private function fetchAllZammadUsersViaHttp() {
 		if (!function_exists('curl_init')) {
 			return array();
@@ -229,6 +269,17 @@ class agents {
 		}
 
 		return array_values($allUsers);
+	}
+
+	private function fetchAllZammadRolesViaHttp() {
+		if (!function_exists('curl_init')) {
+			return array();
+		}
+
+		$url = rtrim(zammad_url, '/') . '/api/v1/roles';
+		$response = $this->zammadApiGet($url);
+
+		return is_array($response) ? $response : array();
 	}
 
 	private function zammadApiGet($url = '') {
@@ -312,10 +363,54 @@ class agents {
 
 	private function hasAgentRole($agent = null) {
 		if (!is_array($agent) || !isset($agent['role_ids']) || !is_array($agent['role_ids'])) {
+			return !empty($this->getAgentGroupIds($agent));
+		}
+
+		$roleIds = array_map('intval', $agent['role_ids']);
+		$rolesById = $this->fetchAllZammadRoles();
+
+		if (!empty($rolesById)) {
+			foreach ($roleIds as $roleId) {
+				if (isset($rolesById[$roleId]) && $this->isAgentCapableRole($rolesById[$roleId])) {
+					return true;
+				}
+			}
+		}
+
+		if (!empty($this->getAgentGroupIds($agent))) {
+			return true;
+		}
+
+		return in_array(2, $roleIds, true);
+	}
+
+	private function isAgentCapableRole($role = null) {
+		if (!is_array($role)) {
 			return false;
 		}
 
-		return in_array(2, array_map('intval', $agent['role_ids']), true);
+		$roleName = strtolower(trim((string) ($role['name'] ?? '')));
+		if ($roleName !== '' && (strpos($roleName, 'agent') !== false || strpos($roleName, 'admin') !== false)) {
+			return true;
+		}
+
+		if (!isset($role['permission_names']) || !is_array($role['permission_names'])) {
+			return false;
+		}
+
+		foreach ($role['permission_names'] as $permissionName) {
+			$permissionName = strtolower((string) $permissionName);
+
+			if ($permissionName === 'admin' || strpos($permissionName, 'admin.') === 0) {
+				return true;
+			}
+
+			if ($permissionName === 'ticket.agent' || strpos($permissionName, 'ticket.agent.') === 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function sortAgentsByDisplayName($agentA = null, $agentB = null) {
