@@ -46,7 +46,10 @@
 							</div>
 
 							<div class="d-grid">
-								<button class="btn btn-primary btn-lg" type="submit">Log In</button>
+								<button class="btn btn-primary btn-lg" id="loginSubmitButton" type="submit" data-idle-label="Log In" data-loading-label="Signing In...">
+									<span class="login-button-spinner spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+									<span class="login-button-label">Log In</span>
+								</button>
 							</div>
 						</form>
 					</div>

@@ -129,3 +129,32 @@ function toggleFrequency2() {
 		document.getElementById("inputFrequency2Div").setAttribute("hidden", true);
 	}
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+	var loginForm = document.forms.loginSubmit;
+
+	if (!loginForm) {
+		return;
+	}
+
+	loginForm.addEventListener('submit', function() {
+		var submitButton = loginForm.querySelector('button[type="submit"]');
+		var buttonLabel = submitButton ? submitButton.querySelector('.login-button-label') : null;
+		var buttonSpinner = submitButton ? submitButton.querySelector('.login-button-spinner') : null;
+
+		if (!submitButton) {
+			return;
+		}
+
+		submitButton.disabled = true;
+		submitButton.setAttribute('aria-busy', 'true');
+
+		if (buttonSpinner) {
+			buttonSpinner.classList.remove('d-none');
+		}
+
+		if (buttonLabel) {
+			buttonLabel.textContent = submitButton.getAttribute('data-loading-label') || 'Signing In...';
+		}
+	});
+});
