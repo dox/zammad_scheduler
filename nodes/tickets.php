@@ -230,10 +230,23 @@ document.addEventListener('DOMContentLoaded', function () {
 					<label for="inputLoggedBy" class="form-label">Ticket Logged By</label>
 					<select class="form-select" id="inputLoggedBy" name="inputLoggedBy">
 						<?php
-						foreach ($agentsClass->getZammadAgents() AS $agent) {
-							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
-						
-							echo $output;
+						foreach ($agentsClass->getAgentsGroupedByVisibleGroups() AS $groupName => $groupAgents) {
+							echo "<optgroup label=\"" . htmlspecialchars($groupName, ENT_QUOTES) . "\">";
+
+							foreach ($groupAgents AS $agent) {
+								$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
+								if ($agentName === '') {
+									$agentName = $agent['login'] ?? ('Agent ' . $agent['id']);
+								}
+
+								$output  = "<option value=\"" . htmlspecialchars((string) $agent['id'], ENT_QUOTES) . "\">";
+								$output .= htmlspecialchars($agentName, ENT_QUOTES);
+								$output .= "</option>";
+
+								echo $output;
+							}
+
+							echo "</optgroup>";
 						}
 						?>
 					</select>
@@ -242,10 +255,23 @@ document.addEventListener('DOMContentLoaded', function () {
 					<label for="inputAssignTo" class="form-label">Auto-assign To Agent</label>
 					<select class="form-select" id="inputAssignTo" name="inputAssignTo">
 						<?php
-						foreach ($agentsClass->getZammadAgents() AS $agent) {
-							$output  = "<option value=\"" . $agent['id'] . "\">" . $agent['firstname'] . " " . $agent['lastname'] . "</option>";
+						foreach ($agentsClass->getAgentsGroupedByVisibleGroups() AS $groupName => $groupAgents) {
+							echo "<optgroup label=\"" . htmlspecialchars($groupName, ENT_QUOTES) . "\">";
 
-							echo $output;
+							foreach ($groupAgents AS $agent) {
+								$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
+								if ($agentName === '') {
+									$agentName = $agent['login'] ?? ('Agent ' . $agent['id']);
+								}
+
+								$output  = "<option value=\"" . htmlspecialchars((string) $agent['id'], ENT_QUOTES) . "\">";
+								$output .= htmlspecialchars($agentName, ENT_QUOTES);
+								$output .= "</option>";
+
+								echo $output;
+							}
+
+							echo "</optgroup>";
 						}
 						?>
 					</select>

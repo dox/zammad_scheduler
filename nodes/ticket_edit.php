@@ -32,7 +32,7 @@ if (!empty($_POST)) {
 }
 
 $groups = $agentsClass->groups();
-$allAgents = $agentsClass->getZammadAgents();
+$agentsByVisibleGroups = $agentsClass->getAgentsGroupedByVisibleGroups();
 $assignedAgent = $agentsClass->getZammadAgent($ticket->zammad_agent);
 $customerAgent = $agentsClass->getZammadAgent($ticket->zammad_customer);
 
@@ -191,16 +191,36 @@ $lastRunUrl = $lastRunIsOpen ? zammad_url . "/#ticket/zoom/" . $previousZammadTi
 								<div class="col-md-6">
 									<label for="inputLoggedBy" class="form-label">Zammad Customer</label>
 									<select class="form-select" id="inputLoggedBy" name="inputLoggedBy">
-										<?php foreach ($allAgents AS $agent): ?>
-											<option value="<?php echo htmlspecialchars((string) $agent['id'], ENT_QUOTES); ?>"<?php if ($ticket->zammad_customer == $agent['id']) { echo " selected"; } ?>><?php echo htmlspecialchars($agent['firstname'] . " " . $agent['lastname'], ENT_QUOTES); ?></option>
+										<?php foreach ($agentsByVisibleGroups AS $groupName => $groupAgents): ?>
+											<optgroup label="<?php echo htmlspecialchars($groupName, ENT_QUOTES); ?>">
+												<?php foreach ($groupAgents AS $agent): ?>
+													<?php
+													$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
+													if ($agentName === '') {
+														$agentName = $agent['login'] ?? ('Agent ' . $agent['id']);
+													}
+													?>
+													<option value="<?php echo htmlspecialchars((string) $agent['id'], ENT_QUOTES); ?>"<?php if ($ticket->zammad_customer == $agent['id']) { echo " selected"; } ?>><?php echo htmlspecialchars($agentName, ENT_QUOTES); ?></option>
+												<?php endforeach; ?>
+											</optgroup>
 										<?php endforeach; ?>
 									</select>
 								</div>
 								<div class="col-md-6">
 									<label for="inputAssignTo" class="form-label">Zammad Agent</label>
 									<select class="form-select" id="inputAssignTo" name="inputAssignTo">
-										<?php foreach ($allAgents AS $agent): ?>
-											<option value="<?php echo htmlspecialchars((string) $agent['id'], ENT_QUOTES); ?>"<?php if ($ticket->zammad_agent == $agent['id']) { echo " selected"; } ?>><?php echo htmlspecialchars($agent['firstname'] . " " . $agent['lastname'], ENT_QUOTES); ?></option>
+										<?php foreach ($agentsByVisibleGroups AS $groupName => $groupAgents): ?>
+											<optgroup label="<?php echo htmlspecialchars($groupName, ENT_QUOTES); ?>">
+												<?php foreach ($groupAgents AS $agent): ?>
+													<?php
+													$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
+													if ($agentName === '') {
+														$agentName = $agent['login'] ?? ('Agent ' . $agent['id']);
+													}
+													?>
+													<option value="<?php echo htmlspecialchars((string) $agent['id'], ENT_QUOTES); ?>"<?php if ($ticket->zammad_agent == $agent['id']) { echo " selected"; } ?>><?php echo htmlspecialchars($agentName, ENT_QUOTES); ?></option>
+												<?php endforeach; ?>
+											</optgroup>
 										<?php endforeach; ?>
 									</select>
 								</div>

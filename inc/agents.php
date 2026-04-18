@@ -5,7 +5,7 @@ use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
 class agents {
-	private const AGENT_CACHE_VERSION = 5;
+	private const AGENT_CACHE_VERSION = 6;
 
 	public function getAgents() {
 		return $this->getZammadAgents();
@@ -88,6 +88,46 @@ class agents {
 
 		return $agents;
 	}
+
+	public function getAgentsGroupedByVisibleGroups() {
+		$visibleGroups = $this->groups();
+		$groupedAgents = array();
+		$otherAgents = array();
+
+		foreach ($visibleGroups as $groupId => $groupName) {
+			$groupedAgents[$groupName] = array();
+		}
+
+		foreach ($this->getZammadAgents() as $agent) {
+			$agentGroupIds = $this->getAgentGroupIds($agent);
+			$matchedVisibleGroup = false;
+
+			foreach ($agentGroupIds as $groupId) {
+				$groupId = (int) $groupId;
+
+				if (!isset($visibleGroups[$groupId])) {
+					continue;
+				}
+
+				$groupedAgents[$visibleGroups[$groupId]][$agent['id']] = $agent;
+				$matchedVisibleGroup = true;
+			}
+
+			if (!$matchedVisibleGroup) {
+				$otherAgents[$agent['id']] = $agent;
+			}
+		}
+
+		$groupedAgents = array_filter($groupedAgents, function ($agents) {
+			return !empty($agents);
+		});
+
+		if (!empty($otherAgents)) {
+			$groupedAgents['Other Agents'] = $otherAgents;
+		}
+
+		return $groupedAgents;
+	}
 	
 	public function create($array = null) {
 		// Agents now come directly from Zammad and are no longer stored locally.
@@ -162,7 +202,8 @@ class agents {
 			$_SESSION['zammad_agents'],
 			$_SESSION['zammad_agents_loaded_all'],
 			$_SESSION['zammad_roles'],
-			$_SESSION['zammad_group_user_ids']
+			$_SESSION['zammad_group_user_ids'],
+			$_SESSION['zammad_group_memberships']
 		);
 		$_SESSION['zammad_agents_cache_version'] = self::AGENT_CACHE_VERSION;
 	}
@@ -203,7 +244,48 @@ class agents {
 			return null;
 		}
 
-		return $compact;
+		return $this->enrichAgentGroups($compact);
+	}
+
+	private function enrichAgentGroups($agent = null) {
+		if (!is_array($agent) || empty($agent['id'])) {
+			return $agent;
+		}
+
+		$groupMemberships = $this->fetchGroupMembershipsByUserId();
+		$derivedMembership = $groupMemberships[(int) $agent['id']] ?? null;
+
+		if (
+			(empty($agent['group_ids']) || !is_array($agent['group_ids'])) &&
+			is_array($derivedMembership) &&
+			isset($derivedMembership['group_ids']) &&
+			is_array($derivedMembership['group_ids'])
+		) {
+			$agent['group_ids'] = $derivedMembership['group_ids'];
+		}
+
+		if (
+			(empty($agent['groups']) || !is_array($agent['groups'])) &&
+			is_array($derivedMembership) &&
+			isset($derivedMembership['groups']) &&
+			is_array($derivedMembership['groups'])
+		) {
+			$agent['groups'] = $derivedMembership['groups'];
+		}
+
+		if ((empty($agent['groups']) || !is_array($agent['groups'])) && !empty($agent['group_ids'])) {
+			$groupNames = $this->groups();
+			$agent['groups'] = array();
+
+			foreach ($agent['group_ids'] as $groupId) {
+				$groupId = (int) $groupId;
+				if (isset($groupNames[$groupId])) {
+					$agent['groups'][$groupNames[$groupId]] = true;
+				}
+			}
+		}
+
+		return $agent;
 	}
 
 	private function fetchAllZammadUsers() {
@@ -273,6 +355,55 @@ class agents {
 		$_SESSION['zammad_group_user_ids'] = $userIds;
 
 		return $userIds;
+	}
+
+	private function fetchGroupMembershipsByUserId() {
+		if (isset($_SESSION['zammad_group_memberships']) && is_array($_SESSION['zammad_group_memberships'])) {
+			return $_SESSION['zammad_group_memberships'];
+		}
+
+		$groups = $this->fetchAllZammadGroups();
+		$memberships = array();
+
+		foreach ($groups as $groupObject) {
+			$group = $this->normaliseAgent($groupObject);
+
+			if (
+				!is_array($group) ||
+				empty($group['id']) ||
+				empty($group['name']) ||
+				!isset($group['user_ids']) ||
+				!is_array($group['user_ids'])
+			) {
+				continue;
+			}
+
+			$groupId = (int) $group['id'];
+			$groupName = (string) $group['name'];
+
+			foreach ($group['user_ids'] as $userId) {
+				$userId = (int) $userId;
+
+				if (!isset($memberships[$userId])) {
+					$memberships[$userId] = array(
+						'group_ids' => array(),
+						'groups' => array(),
+					);
+				}
+
+				$memberships[$userId]['group_ids'][$groupId] = $groupId;
+				$memberships[$userId]['groups'][$groupName] = true;
+			}
+		}
+
+		foreach ($memberships as $userId => $membership) {
+			$memberships[$userId]['group_ids'] = array_values($membership['group_ids']);
+			ksort($memberships[$userId]['groups'], SORT_NATURAL | SORT_FLAG_CASE);
+		}
+
+		$_SESSION['zammad_group_memberships'] = $memberships;
+
+		return $memberships;
 	}
 
 	private function fetchAllZammadUsersViaHttp() {
@@ -387,31 +518,46 @@ class agents {
 			return array();
 		}
 
-		if (isset($agent['group_ids']) && is_array($agent['group_ids'])) {
-			return array_map('intval', $agent['group_ids']);
-		}
-
-		if (!isset($agent['groups']) || !is_array($agent['groups'])) {
-			return array();
-		}
-
-		$groupIdsByName = array_flip($this->groups());
 		$groupIds = array();
 
-		foreach (array_keys($agent['groups']) as $groupName) {
-			if (isset($groupIdsByName[$groupName])) {
-				$groupIds[] = (int) $groupIdsByName[$groupName];
+		if (isset($agent['group_ids']) && is_array($agent['group_ids'])) {
+			foreach ($agent['group_ids'] as $groupId) {
+				$groupId = (int) $groupId;
+
+				if ($groupId > 0) {
+					$groupIds[$groupId] = $groupId;
+				}
 			}
 		}
 
-		return $groupIds;
+		if (isset($agent['groups']) && is_array($agent['groups'])) {
+			$groupIdsByName = array_flip($this->groups());
+
+			foreach (array_keys($agent['groups']) as $groupName) {
+				if (isset($groupIdsByName[$groupName])) {
+					$groupId = (int) $groupIdsByName[$groupName];
+					$groupIds[$groupId] = $groupId;
+				}
+			}
+		}
+
+		return array_values($groupIds);
 	}
 
 	private function getPrimaryGroupId($agent = null) {
 		$groupIds = $this->getAgentGroupIds($agent);
+		$visibleGroups = $this->groups();
 
 		if (empty($groupIds)) {
 			return null;
+		}
+
+		foreach ($groupIds as $groupId) {
+			$groupId = (int) $groupId;
+
+			if (isset($visibleGroups[$groupId])) {
+				return $groupId;
+			}
 		}
 
 		return (int) reset($groupIds);

@@ -62,23 +62,29 @@ $ticket_articles = $ticketObject->getTicketArticles();
 		<label for="owner_id" class="form-label">Owner</label>
 		<select class="form-select" id="owner_id" name="owner_id">
 			<?php
-			foreach ($agentsClass->getAgents() AS $agent) {
-				$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
-				if ($agentName === "") {
-					$agentName = $agent['login'] ?? ("Agent " . $agent['id']);
-				}
+			foreach ($agentsClass->getAgentsGroupedByVisibleGroups() AS $groupName => $groupAgents) {
+				echo "<optgroup label=\"" . htmlspecialchars($groupName, ENT_QUOTES) . "\">";
 
-				$output  = "<option value=\"" . $agent['id'] . "\"";
-				if ($ticket['owner_id'] == "1" && $agent['id'] == $_SESSION['user_id']) {
-					$output .= " selected";
-				} else {
-					if ($ticket['owner_id'] == $agent['id']) {
-						$output .= " selected";
+				foreach ($groupAgents AS $agent) {
+					$agentName = trim(($agent['firstname'] ?? '') . " " . ($agent['lastname'] ?? ''));
+					if ($agentName === "") {
+						$agentName = $agent['login'] ?? ("Agent " . $agent['id']);
 					}
-				}
-				$output .= ">" . htmlspecialchars($agentName, ENT_QUOTES) . "</option>";
 
-				echo $output;
+					$output  = "<option value=\"" . htmlspecialchars((string) $agent['id'], ENT_QUOTES) . "\"";
+					if ($ticket['owner_id'] == "1" && $agent['id'] == $_SESSION['user_id']) {
+						$output .= " selected";
+					} else {
+						if ($ticket['owner_id'] == $agent['id']) {
+							$output .= " selected";
+						}
+					}
+					$output .= ">" . htmlspecialchars($agentName, ENT_QUOTES) . "</option>";
+
+					echo $output;
+				}
+
+				echo "</optgroup>";
 			}
 			?>
 		</select>
