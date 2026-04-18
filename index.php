@@ -2,7 +2,7 @@
 include_once("inc/autoload.php");
 
 if (isset($_GET['logout'])) {
-	unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups'], $_SESSION['zammad_roles'], $_SESSION['zammad_agents_cache_version']);
+	unset($_SESSION['zammad_agents'], $_SESSION['zammad_agents_loaded_all'], $_SESSION['zammad_groups'], $_SESSION['zammad_roles'], $_SESSION['zammad_group_user_ids'], $_SESSION['zammad_agents_cache_version']);
 	$_SESSION = array();
 	session_unset();
 	session_destroy();
@@ -25,7 +25,7 @@ if (isset($_GET['logout'])) {
 if (isset($_POST['inputUsername']) && isset($_POST['inputPassword'])) {
 	if ($ldap_connection->auth()->attempt($_POST['inputUsername'] . LDAP_ACCOUNT_SUFFIX, $_POST['inputPassword'], $stayAuthenticated = true)) {
 		// Successfully authenticated user.
-		unset($_SESSION['zammad_agents'], $_SESSION['zammad_groups'], $_SESSION['zammad_roles'], $_SESSION['zammad_agents_cache_version']);
+		unset($_SESSION['zammad_agents'], $_SESSION['zammad_agents_loaded_all'], $_SESSION['zammad_groups'], $_SESSION['zammad_roles'], $_SESSION['zammad_group_user_ids'], $_SESSION['zammad_agents_cache_version']);
 		session_regenerate_id(true);
 		$_SESSION['logon'] = true;
 		$_SESSION['username'] = strtoupper($_POST['inputUsername']);

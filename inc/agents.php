@@ -5,7 +5,7 @@ use ZammadAPIClient\Client;
 use ZammadAPIClient\ResourceType;
 
 class agents {
-	private const AGENT_CACHE_VERSION = 2;
+	private const AGENT_CACHE_VERSION = 5;
 
 	public function getAgents() {
 		return $this->getZammadAgents();
@@ -14,7 +14,13 @@ class agents {
 	public function getZammadAgents() {
 		$this->invalidateAgentCacheIfNeeded();
 
-		if (!isset($_SESSION['zammad_agents']) || !is_array($_SESSION['zammad_agents'])) {
+		$hasFullAgentCache = !empty($_SESSION['zammad_agents_loaded_all']);
+
+		if (
+			!$hasFullAgentCache ||
+			!isset($_SESSION['zammad_agents']) ||
+			!is_array($_SESSION['zammad_agents'])
+		) {
 			$zammad_agents = $this->fetchAllZammadUsers();
 			$agentsArray = array();
 
@@ -28,6 +34,7 @@ class agents {
 
 			uasort($agentsArray, array($this, 'sortAgentsByDisplayName'));
 			$_SESSION['zammad_agents'] = $agentsArray;
+			$_SESSION['zammad_agents_loaded_all'] = true;
 		}
 
 		return $_SESSION['zammad_agents'];
@@ -151,7 +158,12 @@ class agents {
 			return;
 		}
 
-		unset($_SESSION['zammad_agents'], $_SESSION['zammad_roles']);
+		unset(
+			$_SESSION['zammad_agents'],
+			$_SESSION['zammad_agents_loaded_all'],
+			$_SESSION['zammad_roles'],
+			$_SESSION['zammad_group_user_ids']
+		);
 		$_SESSION['zammad_agents_cache_version'] = self::AGENT_CACHE_VERSION;
 	}
 
@@ -238,6 +250,31 @@ class agents {
 		return $rolesById;
 	}
 
+	private function fetchAgentUserIdsFromGroups() {
+		if (isset($_SESSION['zammad_group_user_ids']) && is_array($_SESSION['zammad_group_user_ids'])) {
+			return $_SESSION['zammad_group_user_ids'];
+		}
+
+		$groups = $this->fetchAllZammadGroups();
+		$userIds = array();
+
+		foreach ($groups as $groupObject) {
+			$group = $this->normaliseAgent($groupObject);
+
+			if (!is_array($group) || !isset($group['user_ids']) || !is_array($group['user_ids'])) {
+				continue;
+			}
+
+			foreach ($group['user_ids'] as $userId) {
+				$userIds[(int) $userId] = true;
+			}
+		}
+
+		$_SESSION['zammad_group_user_ids'] = $userIds;
+
+		return $userIds;
+	}
+
 	private function fetchAllZammadUsersViaHttp() {
 		if (!function_exists('curl_init')) {
 			return array();
@@ -245,9 +282,10 @@ class agents {
 
 		$allUsers = array();
 		$page = 1;
-		$perPage = 200;
+		$perPage = 100;
+		$maxPages = 100;
 
-		while (true) {
+		while ($page <= $maxPages) {
 			$url = rtrim(zammad_url, '/') . '/api/v1/users?page=' . $page . '&per_page=' . $perPage;
 			$response = $this->zammadApiGet($url);
 
@@ -255,10 +293,18 @@ class agents {
 				break;
 			}
 
+			$userCountBeforePage = count($allUsers);
+
 			foreach ($response as $user) {
 				if (is_array($user) && isset($user['id'])) {
 					$allUsers[$user['id']] = $user;
 				}
+			}
+
+			// Some Zammad setups cap page size server-side, so rely on new IDs appearing
+			// rather than assuming "fewer than requested" means we reached the end.
+			if (count($allUsers) === $userCountBeforePage) {
+				break;
 			}
 
 			if (count($response) < $perPage) {
@@ -277,6 +323,38 @@ class agents {
 		}
 
 		$url = rtrim(zammad_url, '/') . '/api/v1/roles';
+		$response = $this->zammadApiGet($url);
+
+		return is_array($response) ? $response : array();
+	}
+
+	private function fetchAllZammadGroups() {
+		$groups = $this->fetchAllZammadGroupsViaHttp();
+
+		if (is_array($groups) && !empty($groups)) {
+			return $groups;
+		}
+
+		global $client;
+
+		try {
+			$groups = $client->resource(ResourceType::GROUP)->all();
+			if (is_array($groups)) {
+				return $groups;
+			}
+		} catch (\Throwable $e) {
+			return array();
+		}
+
+		return array();
+	}
+
+	private function fetchAllZammadGroupsViaHttp() {
+		if (!function_exists('curl_init')) {
+			return array();
+		}
+
+		$url = rtrim(zammad_url, '/') . '/api/v1/groups';
 		$response = $this->zammadApiGet($url);
 
 		return is_array($response) ? $response : array();
@@ -358,7 +436,7 @@ class agents {
 			return false;
 		}
 
-		return $this->hasAgentRole($agent);
+		return $this->hasAgentRole($agent) || $this->isAgentInAnyGroup($agent);
 	}
 
 	private function hasAgentRole($agent = null) {
@@ -382,6 +460,20 @@ class agents {
 		}
 
 		return in_array(2, $roleIds, true);
+	}
+
+	private function isAgentInAnyGroup($agent = null) {
+		if (!is_array($agent) || empty($agent['id'])) {
+			return false;
+		}
+
+		if (!empty($this->getAgentGroupIds($agent))) {
+			return true;
+		}
+
+		$groupUserIds = $this->fetchAgentUserIdsFromGroups();
+
+		return isset($groupUserIds[(int) $agent['id']]);
 	}
 
 	private function isAgentCapableRole($role = null) {
