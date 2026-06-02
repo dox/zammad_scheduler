@@ -21,6 +21,11 @@ $currentNode = $_GET['n'] ?? 'tickets';
 					<i class="bi bi-people"></i> Agents
 				</a>
 			</li>
+			<li class="nav-item <?php if($currentNode == "scheduler_preview") { echo "active";}?>">
+				<a class="nav-link" href="index.php?n=scheduler_preview">
+					<i class="bi bi-calendar2-week"></i> Preview
+				</a>
+			</li>
 			<li class="nav-item <?php if($currentNode == "logs") { echo "active";}?>">
 				<a class="nav-link" href="index.php?n=logs">
 					<i class="bi bi-clock-history"></i> Logs

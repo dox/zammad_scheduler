@@ -80,6 +80,101 @@ function zammadTicketCreate(this_id, evt) {
 	return false;
 }
 
+function zammadTicketCreateRequest(ticketUID) {
+	return new Promise(function(resolve, reject) {
+		var formData = new FormData();
+		formData.append("ticketUID", ticketUID);
+
+		var request = new XMLHttpRequest();
+		request.open("POST", "../actions/zammadTicketCreate.php", true);
+		request.send(formData);
+
+		request.onload = function() {
+			if (request.status == 200) {
+				resolve(ticketUID);
+			} else {
+				reject(ticketUID);
+			}
+		};
+
+		request.onerror = function() {
+			reject(ticketUID);
+		};
+	});
+}
+
+async function zammadTicketsCreateFromPreview(button, evt) {
+	if (evt && typeof evt.preventDefault === 'function') {
+		evt.preventDefault();
+	}
+
+	var feedback = document.getElementById('runAllFeedback');
+	var previewDate = button ? button.getAttribute('data-preview-date') : '';
+	var ticketUIDs = [];
+
+	try {
+		ticketUIDs = JSON.parse(button.getAttribute('data-ticket-uids') || '[]');
+	} catch (error) {
+		ticketUIDs = [];
+	}
+
+	if (ticketUIDs.length === 0) {
+		if (feedback) {
+			feedback.className = 'alert alert-info';
+			feedback.textContent = 'There are no due tickets to run for this preview date.';
+		}
+		return false;
+	}
+
+	if (!window.confirm('Create ' + ticketUIDs.length + ' Zammad ticket' + (ticketUIDs.length === 1 ? '' : 's') + ' for ' + previewDate + '?')) {
+		return false;
+	}
+
+	if (button) {
+		button.disabled = true;
+		button.setAttribute('aria-busy', 'true');
+	}
+
+	var createdCount = 0;
+	var failedUIDs = [];
+
+	if (feedback) {
+		feedback.className = 'alert alert-warning';
+		feedback.textContent = 'Creating 0 of ' + ticketUIDs.length + ' due tickets...';
+	}
+
+	for (var i = 0; i < ticketUIDs.length; i++) {
+		try {
+			await zammadTicketCreateRequest(ticketUIDs[i]);
+			createdCount++;
+		} catch (ticketUID) {
+			failedUIDs.push(ticketUID);
+		}
+
+		if (feedback) {
+			feedback.className = 'alert alert-warning';
+			feedback.textContent = 'Creating ' + createdCount + ' of ' + ticketUIDs.length + ' due tickets...';
+		}
+	}
+
+	if (button) {
+		button.disabled = false;
+		button.removeAttribute('aria-busy');
+	}
+
+	if (feedback) {
+		if (failedUIDs.length > 0) {
+			feedback.className = 'alert alert-danger';
+			feedback.textContent = 'Created ' + createdCount + ' of ' + ticketUIDs.length + ' tickets. Failed ticket UID' + (failedUIDs.length === 1 ? ': ' : 's: ') + failedUIDs.join(', ') + '.';
+		} else {
+			feedback.className = 'alert alert-success';
+			feedback.textContent = 'Created all ' + createdCount + ' due tickets in Zammad.';
+		}
+	}
+
+	return false;
+}
+
 function zammadTicketUpdate(this_id, state, evt) {	
 	if (evt && typeof evt.preventDefault === 'function') {
 		evt.preventDefault();

@@ -159,6 +159,43 @@ class tickets {
 		}
 	}
 
+	public function getNextDueDate($ticket = null, DateTimeInterface $date = null) {
+		if ($ticket === null || $this->normalizeTicketValue($ticket->status ?? '') !== 'Enabled') {
+			return null;
+		}
+
+		if ($date === null) {
+			$date = new DateTimeImmutable('today');
+		}
+
+		$date = new DateTimeImmutable($date->format('Y-m-d'));
+
+		switch ($this->normalizeTicketValue($ticket->frequency ?? '')) {
+			case 'Daily':
+				return $date;
+
+			case 'Weekly':
+				if ($date->format('N') === '1') {
+					return $date;
+				}
+
+				return $date->modify('next monday');
+
+			case 'Monthly':
+				if ($date->format('j') === '1') {
+					return $date;
+				}
+
+				return $date->modify('first day of next month');
+
+			case 'Yearly':
+				return $this->getNextYearlyDueDate($ticket, $date);
+
+			default:
+				return null;
+		}
+	}
+
 	public function buildTicketPayload($ticket = null) {
 		if ($ticket === null) {
 			return null;
@@ -194,6 +231,70 @@ class tickets {
 
 	private function normalizeTicketValue($value = null) {
 		return ucfirst(strtolower(trim((string) $value)));
+	}
+
+	private function getNextYearlyDueDate($ticket = null, DateTimeInterface $date = null) {
+		if ($ticket === null || empty($ticket->frequency2)) {
+			return null;
+		}
+
+		$date = new DateTimeImmutable($date->format('Y-m-d'));
+		$datesToRun = array_filter(array_map('trim', explode(',', strtoupper((string) $ticket->frequency2))));
+		$nextDueDate = null;
+
+		foreach ($datesToRun as $dateToRun) {
+			$dateParts = $this->parseYearlyDateToken($dateToRun);
+			if ($dateParts === null) {
+				continue;
+			}
+
+			for ($year = (int) $date->format('Y'); $year <= (int) $date->format('Y') + 1; $year++) {
+				if (!checkdate($dateParts['month'], $dateParts['day'], $year)) {
+					continue;
+				}
+
+				$candidate = $date->setDate($year, $dateParts['month'], $dateParts['day']);
+				if ($candidate < $date) {
+					continue;
+				}
+
+				if ($nextDueDate === null || $candidate < $nextDueDate) {
+					$nextDueDate = $candidate;
+				}
+			}
+		}
+
+		return $nextDueDate;
+	}
+
+	private function parseYearlyDateToken($dateToken = null) {
+		$monthNumbers = [
+			'JAN' => 1,
+			'FEB' => 2,
+			'MAR' => 3,
+			'APR' => 4,
+			'MAY' => 5,
+			'JUN' => 6,
+			'JUL' => 7,
+			'AUG' => 8,
+			'SEP' => 9,
+			'OCT' => 10,
+			'NOV' => 11,
+			'DEC' => 12,
+		];
+
+		if (!preg_match('/^([A-Z]{3})-(\d{1,2})$/', trim((string) $dateToken), $matches)) {
+			return null;
+		}
+
+		if (!isset($monthNumbers[$matches[1]])) {
+			return null;
+		}
+
+		return [
+			'month' => $monthNumbers[$matches[1]],
+			'day' => (int) $matches[2],
+		];
 	}
 
 	private function logScheduledTicketSummary($dueTickets = [], DateTimeInterface $date = null) {

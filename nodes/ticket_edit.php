@@ -42,7 +42,9 @@ $priorityLabels = array(
 	"3" => "3 High",
 );
 
-$statusClass = $ticket->status === "Enabled" ? "bg-success-subtle text-success-emphasis" : "bg-secondary-subtle text-secondary-emphasis";
+$normalizedStatus = ucfirst(strtolower(trim((string) $ticket->status)));
+$normalizedFrequency = ucfirst(strtolower(trim((string) $ticket->frequency)));
+$statusClass = $normalizedStatus === "Enabled" ? "bg-success-subtle text-success-emphasis" : "bg-secondary-subtle text-secondary-emphasis";
 $priorityText = $priorityLabels[$ticket->zammad_priority] ?? $ticket->zammad_priority;
 $groupName = $groups[$ticket->zammad_group] ?? ("Group " . $ticket->zammad_group);
 $assignedName = is_array($assignedAgent) ? trim(($assignedAgent['firstname'] ?? '') . " " . ($assignedAgent['lastname'] ?? '')) : "";
@@ -58,10 +60,14 @@ if ($customerName === "") {
 	$customerName = "Customer " . $ticket->zammad_customer;
 }
 
-$frequencySummary = $ticket->frequency;
-if ($ticket->frequency === "Yearly" && !empty($ticket->frequency2)) {
+$frequencySummary = $normalizedFrequency;
+if ($normalizedFrequency === "Yearly" && !empty($ticket->frequency2)) {
 	$frequencySummary .= " on " . strtoupper($ticket->frequency2);
 }
+
+$nextDueDate = $tickets->getNextDueDate($ticket);
+$today = new DateTimeImmutable('today');
+$appTimezone = defined("app_timezone") ? app_timezone : date_default_timezone_get();
 
 $lastRunIsOpen = isset($previousZammadTicket['id']) && $previousZammadTicket['state'] != 'closed';
 $lastRunUrl = $lastRunIsOpen ? zammad_url . "/#ticket/zoom/" . $previousZammadTicket['id'] : null;
@@ -91,7 +97,7 @@ $lastRunUrl = $lastRunIsOpen ? zammad_url . "/#ticket/zoom/" . $previousZammadTi
 								<h2 class="h4 mb-1"><?php echo htmlspecialchars($ticket->subject, ENT_QUOTES); ?></h2>
 								<div class="text-muted">Ticket ID <?php echo htmlspecialchars((string) $ticket->uid, ENT_QUOTES); ?></div>
 							</div>
-							<span class="badge <?php echo $statusClass; ?>"><?php echo htmlspecialchars($ticket->status, ENT_QUOTES); ?></span>
+							<span class="badge <?php echo $statusClass; ?>"><?php echo htmlspecialchars($normalizedStatus, ENT_QUOTES); ?></span>
 						</div>
 
 						<div class="ticket-meta-list">
@@ -119,6 +125,24 @@ $lastRunUrl = $lastRunIsOpen ? zammad_url . "/#ticket/zoom/" . $previousZammadTi
 								<div class="ticket-meta-label">Tags</div>
 								<div class="ticket-meta-value"><?php echo $ticket->tags ? htmlspecialchars($ticket->tags, ENT_QUOTES) : '<span class="text-muted">No tags set</span>'; ?></div>
 							</div>
+						</div>
+
+						<div class="mt-4">
+							<div class="ticket-meta-label mb-2">Next Due</div>
+							<?php if ($normalizedStatus !== "Enabled"): ?>
+								<div class="alert alert-light border mb-0" role="alert">
+									This scheduled ticket is disabled.
+								</div>
+							<?php elseif ($nextDueDate instanceof DateTimeInterface): ?>
+								<div class="alert alert-success-subtle border border-success-subtle mb-0" role="alert">
+									<div class="fw-semibold mb-1"><?php echo $nextDueDate->format('Y-m-d') === $today->format('Y-m-d') ? "Due today" : "Next due " . htmlspecialchars($nextDueDate->format('l j F Y'), ENT_QUOTES); ?></div>
+									<div class="small text-muted">Evaluated in <?php echo htmlspecialchars($appTimezone, ENT_QUOTES); ?>.</div>
+								</div>
+							<?php else: ?>
+								<div class="alert alert-warning mb-0" role="alert">
+									No next due date could be calculated for this schedule.
+								</div>
+							<?php endif; ?>
 						</div>
 
 						<div class="mt-4">
