@@ -120,7 +120,7 @@ class tickets {
 		$dueTickets = [];
 
 		foreach ($allTickets as $ticket) {
-			if (($ticket->status ?? '') !== 'Enabled') {
+			if ($this->normalizeTicketValue($ticket->status ?? '') !== 'Enabled') {
 				continue;
 			}
 
@@ -141,7 +141,7 @@ class tickets {
 			$date = new DateTimeImmutable('today');
 		}
 
-		switch ($ticket->frequency ?? '') {
+		switch ($this->normalizeTicketValue($ticket->frequency ?? '')) {
 			case 'Daily':
 				return true;
 
@@ -181,12 +181,42 @@ class tickets {
 
 	public function runScheduledTickets($date = null) {
 		$dueTickets = $this->getDueTicketsForDate($date);
+		$date = $date instanceof DateTimeInterface ? $date : new DateTimeImmutable($date === null ? 'today' : (string) $date);
+
+		$this->logScheduledTicketSummary($dueTickets, $date);
 
 		foreach ($dueTickets as $ticket) {
 			$this->ticketCreateInZammad($this->buildTicketPayload($ticket));
 		}
 
 		return count($dueTickets);
+	}
+
+	private function normalizeTicketValue($value = null) {
+		return ucfirst(strtolower(trim((string) $value)));
+	}
+
+	private function logScheduledTicketSummary($dueTickets = [], DateTimeInterface $date = null) {
+		$counts = [
+			'Daily' => 0,
+			'Weekly' => 0,
+			'Monthly' => 0,
+			'Yearly' => 0,
+		];
+
+		foreach ($dueTickets as $ticket) {
+			$frequency = $this->normalizeTicketValue($ticket->frequency ?? '');
+			if (!array_key_exists($frequency, $counts)) {
+				continue;
+			}
+
+			$counts[$frequency]++;
+		}
+
+		$logRecord = new logs();
+		$logRecord->description = "Cron evaluated " . $date->format('Y-m-d') . ": " . count($dueTickets) . " due tickets (Daily: " . $counts['Daily'] . ", Weekly: " . $counts['Weekly'] . ", Monthly: " . $counts['Monthly'] . ", Yearly: " . $counts['Yearly'] . ")";
+		$logRecord->type = "cron";
+		$logRecord->log_record();
 	}
 
 	private function isYearlyTicketDueOnDate($ticket = null, DateTimeInterface $date = null) {

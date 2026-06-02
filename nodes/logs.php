@@ -18,7 +18,7 @@ $logsClass->purgeLogs();
 		<code>
 			<ul class="list-unstyled">
 				<li># Run the combined scheduler once a day:</li>
-				<li>0 0 * * * cd <?php echo($_SERVER['DOCUMENT_ROOT']); ?>/; php -q cron/run.php</li>
+				<li>0 2 * * * cd <?php echo($_SERVER['DOCUMENT_ROOT']); ?>/; php -q cron/run.php</li>
 				<li># This single job checks daily, weekly, monthly, and yearly tickets automatically.</li>
 			</ul>
 		</code>

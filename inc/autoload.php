@@ -3,6 +3,8 @@ session_start();
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/inc/config.php');
 
+date_default_timezone_set(defined("app_timezone") ? app_timezone : "Europe/London");
+
 if (debug == true) {
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
