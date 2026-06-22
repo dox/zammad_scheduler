@@ -19,5 +19,8 @@ $ticket_data = [
 	],
 ];
 
-$tickets->ticketCreateInZammad($ticket_data);
+if (!$tickets->ticketCreateInZammad($ticket_data)) {
+	http_response_code(500);
+	exit("Unable to create Zammad ticket");
+}
 ?>

@@ -219,12 +219,20 @@ class tickets {
 	public function runScheduledTickets($date = null) {
 		$dueTickets = $this->getDueTicketsForDate($date);
 		$date = $date instanceof DateTimeInterface ? $date : new DateTimeImmutable($date === null ? 'today' : (string) $date);
+		$createdCount = 0;
+		$failedCount = 0;
 
 		$this->logScheduledTicketSummary($dueTickets, $date);
 
 		foreach ($dueTickets as $ticket) {
-			$this->ticketCreateInZammad($this->buildTicketPayload($ticket));
+			if ($this->ticketCreateInZammad($this->buildTicketPayload($ticket))) {
+				$createdCount++;
+			} else {
+				$failedCount++;
+			}
 		}
+
+		$this->logScheduledTicketRunResult($createdCount, $failedCount, $date);
 
 		return count($dueTickets);
 	}
@@ -317,6 +325,17 @@ class tickets {
 		$logRecord = new logs();
 		$logRecord->description = "Cron evaluated " . $date->format('Y-m-d') . ": " . count($dueTickets) . " due tickets (Daily: " . $counts['Daily'] . ", Weekly: " . $counts['Weekly'] . ", Monthly: " . $counts['Monthly'] . ", Yearly: " . $counts['Yearly'] . ")";
 		$logRecord->type = "cron";
+		$logRecord->log_record();
+	}
+
+	private function logScheduledTicketRunResult($createdCount = 0, $failedCount = 0, DateTimeInterface $date = null) {
+		if ($date === null) {
+			$date = new DateTimeImmutable('today');
+		}
+
+		$logRecord = new logs();
+		$logRecord->description = "Cron completed " . $date->format('Y-m-d') . ": " . $createdCount . " created, " . $failedCount . " failed";
+		$logRecord->type = $failedCount > 0 ? "error" : "cron";
 		$logRecord->log_record();
 	}
 
@@ -416,6 +435,11 @@ class tickets {
 	
 	public function ticketCreateInZammad($ticket = null) {
 		global $client;
+
+		if ($ticket === null) {
+			$this->logTicketCreateFailure("No ticket payload supplied");
+			return false;
+		}
 	
 		$ticket_data = [
 			'group_id'    => $ticket['group_id'],
@@ -432,10 +456,23 @@ class tickets {
 	
 		$zammad_ticket = $client->resource( ResourceType::TICKET );
 		$zammad_ticket->setValues($ticket_data);
-		$zammad_ticket->save();
-		exitOnError($zammad_ticket);
+		try {
+			$zammad_ticket->save();
+		} catch (\Throwable $exception) {
+			$this->logTicketCreateFailure($exception->getMessage(), $ticket);
+			return false;
+		}
+
+		if ($zammad_ticket->hasError()) {
+			$this->logTicketCreateFailure($zammad_ticket->getError(), $ticket);
+			return false;
+		}
 		
 		$zammad_ticket_id = $zammad_ticket->getID(); // same as getValue('id')
+		if (empty($zammad_ticket_id)) {
+			$this->logTicketCreateFailure("Zammad did not return a ticket ID", $ticket);
+			return false;
+		}
 		
 		$ticket_update['uid'] = $ticket['uid'];
 		$ticket_update['last_id'] = $zammad_ticket_id;
@@ -449,6 +486,16 @@ class tickets {
 		$logRecord->log_record();
 	
 		return true;
+	}
+
+	private function logTicketCreateFailure($error = null, $ticket = null) {
+		$title = is_array($ticket) && isset($ticket['title']) ? $ticket['title'] : "unknown ticket";
+		$uid = is_array($ticket) && isset($ticket['uid']) ? " UID: " . $ticket['uid'] : "";
+
+		$logRecord = new logs();
+		$logRecord->description = "API submission failed: " . $title . $uid . " - " . (string) $error;
+		$logRecord->type = "error";
+		$logRecord->log_record();
 	}
 
 	public function update($array = null) {

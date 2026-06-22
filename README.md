@@ -58,8 +58,7 @@ The app uses these Composer packages:
    - import `mysql_import.sql` into your PostgreSQL database manually
 
 6. Make sure your web server document root points at the app directory.
-7. Update the hardcoded document root path in `cron/run.php` so it matches your deployment.
-8. Add one cron job for the scheduler.
+7. Add one cron job for the scheduler.
 
 ## Cron setup
 
